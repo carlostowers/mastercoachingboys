@@ -218,6 +218,16 @@ footer b{color:var(--white)}
 body[data-age="7-8"] [data-agev~="7-8"],
 body[data-age="9-10"] [data-agev~="9-10"],
 body[data-age="11-12"] [data-agev~="11-12"]{display:revert}
+.steps li[data-agev]{display:none}
+body[data-age="9-10"] .steps li[data-agev~="9-10"]{display:flex}
+.steps li.nophase{cursor:default}
+.steps li.nophase:hover{background:none}
+.cue{flex-wrap:wrap}
+.cue > div + div{padding-left:14px;border-left:1px solid rgba(255,207,40,.55)}
+@media (max-width:600px){ .cue > div + div{flex-basis:100%;padding-left:0;border-left:0;padding-top:10px;border-top:1px solid rgba(255,207,40,.55)} }
+footer .credit{flex-basis:100%;display:flex;align-items:flex-end;gap:9px;margin-top:8px;line-height:1}
+footer .credit svg{height:26px;width:auto;display:block}
+footer .credit span{padding-bottom:1px}
 .na{display:none;align-items:center;gap:12px;border:1px dashed var(--line2);border-radius:var(--radius);padding:14px 16px;color:var(--soft);background:rgba(11,35,80,.5)}
 .na b{color:var(--gold)}
 body[data-age="7-8"] .drill[data-ages]:not([data-ages~="7-8"]) .d-grid,
@@ -834,7 +844,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
       </div>
       <div class="card coach-only">
         <h3>Material y <span class="g">organización</span></h3>
-        <p class="org"><b>Material:</b> balones (idealmente 1 por pareja), bolas de tenis y conos marcando 10, 15, 20, 25 y 30 pies desde la malla.<br><b>Saque:</b> 7–8U por abajo; 9–10U por abajo y por arriba quien pueda; 11–12U siempre por arriba.<br><b>S2 y S3:</b> mitad del grupo en la zona 1 y mitad en la zona 5.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
+        <p class="org"><b>Material:</b> balones (idealmente 1 por pareja), bolas de tenis (en 9–10U, una por jugador) y conos marcando 10, 15, 20, 25 y 30 pies desde la malla.<br><b>Saque:</b> 7–8U por abajo; 9–10U por abajo y por arriba quien pueda; 11–12U siempre por arriba.<br><b>S2 y S3:</b> mitad del grupo en la zona 1 y mitad en la zona 5.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
       </div>
       <div class="card player-only">
         <h3>Lo que vamos a <span class="g">buscar</span></h3>
@@ -858,11 +868,11 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
           <div class="legend"><span><i class="lg-dot lg-p"></i>Saca</span><span><i class="lg-dot lg-c"></i>Compañero</span><span><i class="lg-dot lg-tb"></i>Bola de tenis</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
         </div>
         <div class="info">
-          <p class="org player-only"><b>Qué haces:</b> con tu compañero al otro lado de la malla. Primero el gesto con bola de tenis, después con balón, y se van alejando.</p>
-          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Gesto con bola de tenis</b><p>A 10 pies de la malla, simula el saque y lanza la bola al compañero.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Con balón</b><p>Saca al compañero del otro lado, que la atrapa y saca de vuelta.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Un paso atrás</b><p>Cuando meten 3 seguidos, los dos se alejan a la siguiente distancia.</p></div></li></ol>
-          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Adentro primero</div></div></div>
-          <div class="box coach-only"><h5>Corrige</h5><ul><li>Pone adelante el pie del mismo lado de la mano de sacar: va el contrario.</li><li>Por abajo: dobla el brazo o golpea con los dedos.</li><li>Por arriba: lanza el balón muy alto o detrás de la cabeza.</li><li>Se aleja sin haber metido varios seguidos.</li></ul></div>
-          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>Por abajo y de frente. Bola de tenis a 10 o 15 pies; con balón a 10, 20 y 25 pies.</span></div><div data-age="9-10"><b>9–10U</b><span>Por abajo; por arriba quien pueda. Bola de tenis a 10 o 15 pies; con balón a 20, 25 y 30 pies.</span></div><div data-age="11-12"><b>11–12U</b><span>Siempre por arriba. Bola de tenis a 10 o 15 pies; con balón a 20, 25 y 30 pies.</span></div></div></div>
+          <p class="org player-only"><b>Qué haces:</b> con tu compañero al otro lado de la malla. <span data-agev="9-10">Primero lanzas y atrapas la bola de tenis arriba y al frente. Luego haces </span><span data-agev="7-8 11-12">Primero </span>el gesto con bola de tenis, después con balón, y se van alejando.</p>
+          <ol class="steps"><li class="nophase" data-agev="9-10"><span class="n">1</span><div><b>Lanza y atrapa</b><p>Con el brazo de sacar armado (codo alto, mano cerca de la oreja), lanza la bola de tenis con la otra mano y la atrapa arriba y al frente, con la palma abierta mirando a la malla. 1 minuto.</p></div></li><li data-step="0"><span class="n"><span data-agev="9-10">2</span><span data-agev="7-8 11-12">1</span></span><div><b>Gesto con bola de tenis</b><p>A 10 pies de la malla, simula el saque y lanza la bola al compañero.</p></div></li><li data-step="1"><span class="n"><span data-agev="9-10">3</span><span data-agev="7-8 11-12">2</span></span><div><b>Con balón</b><p>Saca al compañero del otro lado, que la atrapa y saca de vuelta.</p></div></li><li data-step="2"><span class="n"><span data-agev="9-10">4</span><span data-agev="7-8 11-12">3</span></span><div><b>Un paso atrás</b><p>Cuando meten 3 seguidos, los dos se alejan a la siguiente distancia.</p></div></li></ol>
+          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Adentro primero</div></div><div data-agev="9-10"><div class="k">Lanza y atrapa</div><div class="w">Arriba y al frente</div></div></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li data-agev="9-10">Lanza y atrapa: la atrapa con los dedos por debajo, como una pelota de béisbol. Va la palma abierta mirando a la malla.</li><li data-agev="9-10">Lanza y atrapa: se inclina o da un paso para atraparla. El lanzamiento va bajito y frente al hombro de sacar.</li><li>Pone adelante el pie del mismo lado de la mano de sacar: va el contrario.</li><li>Por abajo: dobla el brazo o golpea con los dedos.</li><li>Por arriba: lanza el balón muy alto o detrás de la cabeza.</li><li>Se aleja sin haber metido varios seguidos.</li></ul></div>
+          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>Por abajo y de frente. Bola de tenis a 10 o 15 pies; con balón a 10, 20 y 25 pies.</span></div><div data-age="9-10"><b>9–10U</b><span>Empiezan con Lanza y atrapa. Por abajo; por arriba quien pueda. Bola de tenis a 10 o 15 pies; con balón a 20, 25 y 30 pies.</span></div><div data-age="11-12"><b>11–12U</b><span>Siempre por arriba. Bola de tenis a 10 o 15 pies; con balón a 20, 25 y 30 pies.</span></div></div></div>
         </div>
       </div>
     </article>
@@ -919,6 +929,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
   <div class="wrap">
     <div><b>Cuerpo Técnico Masculino</b> · Club Voleibol Vaqueros · M.O.V.E.</div>
     <div>Master Coaching Boys 2026–2027</div>
+    <div class="credit"><svg class="voleii" viewBox="0 -43 436 143" role="img" aria-label="voleii"><polygon points="0,0 24,0 48,68 72,0 96,0 60,100 36,100" fill="#F2EFE8"/><circle cx="160" cy="50" r="39" fill="none" stroke="#F2EFE8" stroke-width="22"/><rect x="224" y="-40" width="22" height="140" fill="#F2EFE8"/><path d="M349 50 A39 39 0 1 0 337.6 77.6" fill="none" stroke="#F2EFE8" stroke-width="22"/><rect x="262" y="41" width="98" height="18" fill="#F2EFE8"/><rect x="378" y="0" width="22" height="100" fill="#F2EFE8"/><rect x="414" y="0" width="22" height="100" fill="#F2EFE8"/><circle cx="389" cy="-30" r="13" fill="#C6F432"/><circle cx="425" cy="-30" r="13" fill="#C6F432"/></svg><span>by <b>Carlos Torres</b></span></div>
   </div>
 </footer>
 <script>
