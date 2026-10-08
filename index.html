@@ -219,7 +219,7 @@ body[data-age="7-8"] [data-agev~="7-8"],
 body[data-age="9-10"] [data-agev~="9-10"],
 body[data-age="11-12"] [data-agev~="11-12"]{display:revert}
 .steps li[data-agev]{display:none}
-body[data-age="9-10"] .steps li[data-agev~="9-10"]{display:flex}
+body[data-age="9-10"] .steps li[data-agev~="9-10"]{display:flex}body[data-age="7-8"] .steps li[data-agev~="7-8"],body[data-age="11-12"] .steps li[data-agev~="11-12"]{display:flex}
 .steps li.nophase{cursor:default}
 .steps li.nophase:hover{background:none}
 .cue{flex-wrap:wrap}
@@ -562,7 +562,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
     <div class="grid2">
       <div class="card">
         <h3>Cómo se usan los <span class="g">17 minutos</span></h3>
-        <div data-agev="7-8"><div class="mins" role="img" aria-label="Explica 2 minutos, V1 7 minutos, V2 8 minutos, Agua 3 minutos"><div class="ex" style="flex:2"><b>2'</b><i>Explica</i></div><div class="d1" style="flex:7"><b>V1</b><i>7'</i></div><div class="d2" style="flex:8"><b>V2</b><i>8'</i></div><div class="ag" style="flex:3"><b>Agua</b><i>3'</i></div></div><div class="mins-legend"><span>Entra el equipo</span><span>Rota a Cancha 3 · Ataque</span></div></div><div data-agev="9-10 11-12"><div class="mins" role="img" aria-label="Explica 2 minutos, V1 5 minutos, V2 5 minutos, V3 5 minutos, Agua 3 minutos"><div class="ex" style="flex:2"><b>2'</b><i>Explica</i></div><div class="d1" style="flex:5"><b>V1</b><i>5'</i></div><div class="d2" style="flex:5"><b>V2</b><i>5'</i></div><div class="d3" style="flex:5"><b>V3</b><i>5'</i></div><div class="ag" style="flex:3"><b>Agua</b><i>3'</i></div></div><div class="mins-legend"><span>Entra el equipo</span><span>Rota a Cancha 3 · Ataque</span></div></div>
+        <div data-agev="7-8"><div class="mins" role="img" aria-label="Explica 2 minutos, V1 5 minutos, V2 5 minutos, V4 5 minutos, Agua 3 minutos"><div class="ex" style="flex:2"><b>2'</b><i>Explica</i></div><div class="d1" style="flex:5"><b>V1</b><i>5'</i></div><div class="d2" style="flex:5"><b>V2</b><i>5'</i></div><div class="d3" style="flex:5"><b>V4</b><i>5'</i></div><div class="ag" style="flex:3"><b>Agua</b><i>3'</i></div></div><div class="mins-legend"><span>Entra el equipo</span><span>Rota a Cancha 3 · Ataque</span></div></div><div data-agev="9-10 11-12"><div class="mins" role="img" aria-label="Explica 2 minutos, V1 3 minutos, V2 4 minutos, V3 4 minutos, V4 4 minutos, Agua 3 minutos"><div class="ex" style="flex:2"><b>2'</b><i>Explica</i></div><div class="d1" style="flex:3"><b>V1</b><i>3'</i></div><div class="d2" style="flex:4"><b>V2</b><i>4'</i></div><div class="d3" style="flex:4"><b>V3</b><i>4'</i></div><div class="d4" style="flex:4"><b>V4</b><i>4'</i></div><div class="ag" style="flex:3"><b>Agua</b><i>3'</i></div></div><div class="mins-legend"><span>Entra el equipo</span><span>Rota a Cancha 3 · Ataque</span></div></div></div>
       </div>
       <div class="card">
         <h3>Equipos en <span class="g">esta cancha</span></h3>
@@ -580,7 +580,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
       </div>
       <div class="card coach-only">
         <h3>Material y <span class="g">organización</span></h3>
-        <p class="org"><b>Tríos:</b> 2 de un lado de la malla y 1 del otro, 1 balón por trío. Siempre empieza el lado de 2.<br><b>Malla:</b> 6’ 11”. Caben 3 o 4 tríos a lo ancho.<br><b>Seguridad:</b> al pasar por debajo de la malla, agachado y por el lado de su trío, lejos del balón.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
+        <p class="org"><b>Tríos sin malla.</b> V1, V2 y V3: 2 lanzadores (L1 y L2) y 1 jugador que volea (J), con 2 balones por trío, uno por lanzador. V4: 2 en una fila frente a 1, con 1 balón.<br><b>Lanzamiento:</b> con las dos manos por abajo, alto y suave, a la frente del que volea. Si el lanzamiento es bueno, el drill funciona.<br><b>Rotación:</b> cada 8 balones cambia el que volea.<br><b>Espacio:</b> los tríos uno al lado del otro, con 2 m entre trío y trío, para que el que volea pueda moverse de lado y hacia atrás sin chocar.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
       </div>
       <div class="card player-only">
         <h3>Lo que vamos a <span class="g">buscar</span></h3>
@@ -592,69 +592,92 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
     <article class="drill" id="v1">
       <div class="d-head">
         <span class="code">V1</span>
-        <h3 class="d-name">Volea y sigue</h3>
-        <div class="chips"><span class="chip t" data-agev="7-8">7 min</span><span class="chip t" data-agev="9-10 11-12">5 min</span><span class="chip">Tríos</span><span class="chip">1 balón por trío</span></div>
+        <h3 class="d-name">Lateral</h3>
+        <div class="chips"><span class="chip t" data-agev="7-8">5 min</span><span class="chip t" data-agev="9-10 11-12">3 min</span><span class="chip">Tríos</span><span class="chip">2 balones por trío</span></div>
       </div>
       
       <div class="d-grid">
         <div class="dia" data-scene="v1">
           <div class="stage"></div>
-          
+
           <div class="ctrls"></div>
-          <div class="legend"><span><i class="lg-dot lg-p"></i>Jugadores del trío</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
+          <div class="legend"><span><i class="lg-dot lg-p"></i>J · juega el voleo</span><span><i class="lg-dot lg-c"></i>L1 y L2 · lanzadores</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
         </div>
         <div class="info">
-          <p class="org player-only"><b>Qué haces:</b> en tríos, 2 de un lado de la malla y 1 del otro. Voleas al otro lado y pasas por debajo de la malla a la fila de enfrente.</p>
-          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Volea</b><p>Contacto arriba de la frente, con las manos en forma de balón. El balón sale alto al otro lado.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Sigue</b><p>El que voleó pasa por debajo de la malla, por el lado, a la fila de enfrente.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Entra el siguiente</b><p>El de atrás pasa al frente y se prepara debajo del balón.</p></div></li></ol>
-          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Volea y sigue</div></div></div>
-          <div class="box coach-only"><h5>Corrige</h5><ul><li>Contacta el balón bajo la barbilla o con las palmas.</li><li>Se queda mirando después de volear en vez de seguir.</li><li>Pasa por debajo de la malla por el medio, donde va el balón.</li></ul></div>
-          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>A 2 m de la malla. Se vale atrapar el balón en posición de voleo y lanzarlo (voleo atrapado).</span></div><div data-age="9-10"><b>9–10U</b><span>Voleo continuo. Reto: 10 seguidos sin que caiga.</span></div><div data-age="11-12"><b>11–12U</b><span>Balón más alto y más lejos de la malla. Reto: 15 seguidos.</span></div></div></div>
+          <p class="org player-only"><b>Qué haces:</b> en tríos, dos compañeros lanzan y tú voleas. Voleas de frente al que lanza, te mueves de lado hasta quedar frente al otro y vuelves a volear.</p>
+          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Volea al frente</b><p>L1 lanza alto y suave. De frente a él, el jugador le devuelve el balón a las manos con un voleo.</p></div></li><li data-step="1"><span class="n">2</span><div><b>De lado</b><p>Pasos laterales, sin cruzar los pies, hasta quedar de frente a L2.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Llega, para y volea</b><p>Para con los hombros hacia L2 antes de que llegue el balón y le volea. Regresa de lado hacia L1.</p></div></li></ol>
+          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Hombros al target</div></div></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li>Cruza los pies o corre de frente en vez de moverse de lado.</li><li>Volea mientras todavía se está moviendo: tiene que llegar y parar antes del contacto.</li><li>Se queda con los hombros hacia el lanzador anterior y el balón sale torcido.</li></ul></div>
+          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>Lanzadores a 2.5 m del jugador y a 1.5 m uno del otro. Se vale atrapar el balón en posición de voleo y lanzarlo (voleo atrapado).</span></div><div data-age="9-10"><b>9–10U</b><span>Lanzadores a 3 m y a 2 m uno del otro. Reto: 10 voleos seguidos a las manos del lanzador.</span></div><div data-age="11-12"><b>11–12U</b><span>Lanzadores a 4 m y a 3 m uno del otro. El lanzador tira apenas el jugador llega, para que se mueva más rápido.</span></div></div></div>
         </div>
       </div>
     </article>
     <article class="drill" id="v2">
       <div class="d-head">
         <span class="code">V2</span>
-        <h3 class="d-name">Arriba y pasa</h3>
-        <div class="chips"><span class="chip t" data-agev="7-8">8 min</span><span class="chip t" data-agev="9-10 11-12">5 min</span><span class="chip">Tríos</span><span class="chip">1 balón por trío</span></div>
+        <h3 class="d-name">Diagonal atrás</h3>
+        <div class="chips"><span class="chip t" data-agev="7-8">5 min</span><span class="chip t" data-agev="9-10 11-12">4 min</span><span class="chip">Tríos</span><span class="chip">2 balones por trío</span></div>
       </div>
       
       <div class="d-grid">
         <div class="dia" data-scene="v2">
           <div class="stage"></div>
-          
+
           <div class="ctrls"></div>
-          <div class="legend"><span><i class="lg-dot lg-p"></i>Jugadores del trío</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
+          <div class="legend"><span><i class="lg-dot lg-p"></i>J · juega el voleo</span><span><i class="lg-dot lg-c"></i>L1 y L2 · lanzadores</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
         </div>
         <div class="info">
-          <p class="org player-only"><b>Qué haces:</b> recibes el balón con un voleo hacia arriba para ti mismo y luego se lo pasas al compañero del otro lado. Después sigues por debajo de la malla.</p>
-          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Autopase</b><p>Voleo hacia arriba, controlado, más o menos un metro sobre la cabeza.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Al compañero</b><p>Se pone debajo del balón y lo volea por encima de la malla.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Sigue</b><p>Pasa por debajo de la malla a la fila de enfrente, como en V1.</p></div></li></ol>
+          <p class="org player-only"><b>Qué haces:</b> L1 lanza de frente y L2, que está a un lado, lanza detrás de ti en diagonal. Le voleas a L1, te mueves hacia atrás en diagonal y le voleas a L2.</p>
+          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Volea al frente</b><p>L1 lanza y el jugador le volea de frente.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Atrás en diagonal</b><p>L2 lanza detrás del jugador, en diagonal. El primer paso va hacia atrás con el pie de ese lado, mirando el balón, hasta quedar debajo.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Volea a L2</b><p>Para, hombros hacia L2 y volea. Regresa al centro.</p></div></li><li data-step="3"><span class="n">4</span><div><b>Cambia de lado</b><p>Cada 4 balones, L2 se pasa al otro lado para que el desplazamiento sea hacia los dos lados.</p></div></li></ol>
           <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Debajo del balón</div></div></div>
-          <div class="box coach-only"><h5>Corrige</h5><ul><li>Autopase muy bajo o muy adelante.</li><li>Espera el balón parado en vez de moverse para quedar debajo.</li><li>Dedos juntos y muñecas rígidas.</li></ul></div>
-          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>Autopase bajo. Se vale atrapar después del autopase y lanzar al compañero.</span></div><div data-age="9-10"><b>9–10U</b><span>Dos voleos seguidos sin atrapar.</span></div><div data-age="11-12"><b>11–12U</b><span>El compañero manda el balón un poco lejos para que tenga que moverse antes del autopase.</span></div></div></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li>Camina de espaldas o se vira y corre en vez de abrir el pie hacia el balón.</li><li>Se queda corto y volea con el balón detrás de la cabeza.</li><li>Volea echándose para atrás: tiene que llegar antes y volear con el peso hacia el frente.</li></ul></div>
+          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>Lanzamiento corto, a un paso del jugador. Se vale el voleo atrapado.</span></div><div data-age="9-10"><b>9–10U</b><span>A dos pasos en diagonal. Reto: 8 seguidos sin atrapar.</span></div><div data-age="11-12"><b>11–12U</b><span>Lanzamiento más lejos y más rápido. Volea y regresa al centro antes del próximo lanzamiento.</span></div></div></div>
         </div>
       </div>
     </article>
     <article class="drill" id="v3" data-ages="9-10 11-12">
       <div class="d-head">
         <span class="code">V3</span>
-        <h3 class="d-name">Tres toques</h3>
-        <div class="chips"><span class="chip t" data-agev="9-10 11-12">5 min</span><span class="chip">Tríos</span><span class="chip">1 balón por trío</span></div>
+        <h3 class="d-name">Corto y largo</h3>
+        <div class="chips"><span class="chip t" data-agev="9-10 11-12">4 min</span><span class="chip">Tríos</span><span class="chip">2 balones por trío</span></div>
       </div>
-      <div class="na"><span><b>7–8U no hace V3.</b> Ese tiempo se usa en V1 y V2.</span></div>
+      <div class="na"><span><b>7–8U no hace V3.</b> Ese tiempo se usa en V1, V2 y V4.</span></div>
       <div class="d-grid">
         <div class="dia" data-scene="v3">
           <div class="stage"></div>
-          
+
           <div class="ctrls"></div>
-          <div class="legend"><span><i class="lg-dot lg-p"></i>Lado de 2</span><span><i class="lg-dot lg-c"></i>Lado de 1</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
+          <div class="legend"><span><i class="lg-dot lg-p"></i>J · juega el voleo</span><span><i class="lg-dot lg-c"></i>L1 y L2 · lanzadores</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
         </div>
         <div class="info">
-          <p class="org player-only"><b>Qué haces:</b> en tu lado son dos. Te haces un autopase, se lo pasas al compañero de tu lado y él lo manda al otro lado de la malla. El del otro lado lo devuelve.</p>
-          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Autopase</b><p>El jugador 1 recibe con un voleo hacia arriba.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Al lado</b><p>Gira los hombros hacia el jugador 2 y le volea.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Por encima de la malla</b><p>El jugador 2, con los hombros hacia el otro lado, volea por encima de la malla.</p></div></li><li data-step="3"><span class="n">4</span><div><b>Regresa</b><p>El jugador 3 devuelve el balón al jugador 1. Cada 5 balones rotan.</p></div></li></ol>
-          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Hombros al target</div></div></div>
-          <div class="box coach-only"><h5>Corrige</h5><ul><li>Gira solo los brazos y no los hombros.</li><li>El pase al lado sale muy bajo para el compañero.</li><li>No hace la pausa después del toque.</li></ul></div>
-          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="9-10"><b>9–10U</b><span>Pase al lado a 2 m.</span></div><div data-age="11-12"><b>11–12U</b><span>Pase al lado a 3 m, más alto, con pausa en cada toque.</span></div></div></div>
+          <p class="org player-only"><b>Qué haces:</b> L1 lanza desde cerca y L2 desde lejos. Te mueves un poco hacia atrás y le voleas corto a L1; después te mueves más atrás y le voleas largo a L2.</p>
+          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Atrás y corto</b><p>L1, que está cerca, lanza. El jugador da un paso atrás, se pone debajo del balón y le volea corto a las manos.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Más atrás y largo</b><p>L2, que está lejos, lanza más profundo. El jugador se mueve más atrás y volea largo, empujando con las piernas.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Regresa</b><p>Vuelve al punto de inicio, de frente a los lanzadores.</p></div></li></ol>
+          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Empuja con las piernas</div></div></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li>En el voleo largo tira solo con los brazos: la fuerza sale de las piernas.</li><li>En el voleo corto el balón sale muy fuerte y le pasa por encima a L1.</li><li>Se mueve hacia atrás sin mirar el balón.</li></ul></div>
+          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="9-10"><b>9–10U</b><span>Corto a 2 m y largo a 4 m.</span></div><div data-age="11-12"><b>11–12U</b><span>Corto a 3 m y largo a 5 o 6 m. El largo sale alto, por encima de la altura de la malla.</span></div></div></div>
+        </div>
+      </div>
+    </article>
+    <article class="drill" id="v4">
+      <div class="d-head">
+        <span class="code">V4</span>
+        <h3 class="d-name">Autovoleo y sigue</h3>
+        <div class="chips"><span class="chip t" data-agev="7-8">5 min</span><span class="chip t" data-agev="9-10 11-12">4 min</span><span class="chip">Tríos</span><span class="chip">1 balón por trío</span></div>
+      </div>
+      
+      <div class="d-grid">
+        <div class="dia" data-scene="v4">
+          <div class="stage"></div>
+
+          <div class="ctrls"></div>
+          <div class="legend"><span><i class="lg-dot lg-p"></i>Jugadores del trío</span><span><i class="lg-h"></i>Manos (voleo)</span><span><i class="lg-l"></i>Trayectoria del balón</span></div>
+        </div>
+        <div class="info">
+          <p class="org player-only"><b>Qué haces:</b> dos en una fila y uno solo enfrente. Te haces un autovoleo, le voleas al de enfrente y sales por la derecha a la otra fila. Si hace falta, se vale atrapar o hacer más de un autovoleo.</p>
+          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Autovoleo</b><p>Voleo hacia arriba para sí mismo, más o menos un metro sobre la cabeza.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Volea al compañero</b><p>Debajo del balón y voleo al de la fila de enfrente.</p></div></li><li data-step="2"><span class="n">3</span><div><b>Sigue por la derecha</b><p>Sale por su derecha a la fila de enfrente, lejos del balón.</p></div></li><li data-step="3" data-agev="9-10 11-12"><span class="n">4</span><div><b>Autovoleo al lado</b><p>Progresión: el autovoleo va un poco a la derecha o a la izquierda, da un paso para quedar debajo y volea.</p></div></li><li data-step="4" data-agev="9-10 11-12"><span class="n">5</span><div><b>Voleo corrido</b><p>Al final, voleo directo al compañero, sin autovoleo.</p></div></li></ol>
+          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">Volea y sigue</div></div></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li>Sale por el medio o por la izquierda y se cruza con el balón.</li><li>En el autovoleo al lado volea sin moverse, con el balón fuera de la frente.</li><li>Autovoleo muy bajo: no le da tiempo a acomodarse debajo del balón.</li></ul></div>
+          <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>A 3 m. Autovoleo arriba. Se vale atrapar en posición de voleo y lanzar al compañero.</span></div><div data-age="9-10"><b>9–10U</b><span>A 4 m. Autovoleo arriba y luego al lado con paso. Voleo corrido solo si lo controlan.</span></div><div data-age="11-12"><b>11–12U</b><span>A 4 o 5 m. Las tres partes. Reto: 15 voleos corridos seguidos.</span></div></div></div>
         </div>
       </div>
     </article>
@@ -1411,129 +1434,232 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
     };
   };
 
-  /* ---------------- VOLEO ---------------- */
-  var VNY = 4.8;
-  var VSPOT = { Af: [3.3, 6.9], Ab: [3.3, 8.1], Bf: [3.3, 2.7], Bb: [3.3, 1.5] };
-  function vcp(side) { return side === 'A' ? [3.3, VSPOT.Af[1] - 0.45] : [3.3, VSPOT.Bf[1] + 0.95]; }
-  function vRunKeys(tr, T0, side, dur) {
-    var other = side === 'A' ? 'B' : 'A';
-    var f = VSPOT[side + 'f'], b = VSPOT[other + 'b'];
-    var sg = side === 'A' ? 1 : -1;
-    var d1 = [5.2, VNY + sg * 1.5], d2 = [5.2, VNY - sg * 1.5], n = [5.55, VNY];
-    key(tr, T0, f);
-    key(tr, T0 + dur * 0.28, d1, true);
-    key(tr, T0 + dur * 0.5, n, true);
-    key(tr, T0 + dur * 0.72, d2, true);
-    key(tr, T0 + dur, b);
+  /* ---------------- VOLEO (sin malla) ---------------- */
+  /* medida horizontal (como dimLine, pero acostada) */
+  function dimH(g, y, x0, x1, label) {
+    var dg = el('g', { stroke: 'rgba(255,255,255,0.7)', 'stroke-width': 1.5 }, g);
+    el('line', { x1: px(x0), y1: px(y), x2: px(x1), y2: px(y) }, dg);
+    el('line', { x1: px(x0), y1: px(y - 0.18), x2: px(x0), y2: px(y + 0.18) }, dg);
+    el('line', { x1: px(x1), y1: px(y - 0.18), x2: px(x1), y2: px(y + 0.18) }, dg);
+    var mid = (x0 + x1) / 2, w = label.length * 8 + 18;
+    el('rect', { x: px(mid) - w / 2, y: px(y) - 12, width: w, height: 24, rx: 6, fill: COLORS.navy, stroke: 'rgba(255,255,255,0.35)' }, g);
+    txt(g, px(mid), px(y) + 5, label, { size: 15 });
   }
-  function voleoRotation(cfg) {
-    /* cfg: step, auto (segundos de autopase o 0), steps (6) */
-    var pos = { Af: '1', Ab: '2', Bf: '3', Bb: null };
-    var side = 'A';
-    var tracks = { '1': [[0, VSPOT.Af[0], VSPOT.Af[1]]], '2': [[0, VSPOT.Ab[0], VSPOT.Ab[1]]], '3': [[0, VSPOT.Bf[0], VSPOT.Bf[1]]] };
-    var plats = { '1': [], '2': [], '3': [] };
-    var ball = [], ov = [], phases = [];
-    var STEP = cfg.step, AU = cfg.auto;
-    for (var i = 0; i < 6; i++) {
-      var T = i * STEP, other = side === 'A' ? 'B' : 'A';
-      var front = pos[side + 'f'], back = pos[side + 'b'];
-      var cs = vcp(side), co = vcp(other);
-      if (AU) {
-        ball.push(ballFly(T, T + AU, cs, 2.0, cs, 2.0, 3.3));
-        plats[front].push({ t0: T - 0.3, t1: T + 0.15, kind: 'hands', toPoint: [cs[0], cs[1] - 0.01] });
-        plats[front].push({ t0: T + AU - 0.25, t1: T + AU + 0.18, kind: 'hands', toPoint: co });
-        ov.push({ type: 'text', t0: T + 0.05, t1: T + AU, at: [cs[0] - 1.65, cs[1] + (side === 'A' ? 0.3 : -0.3)], text: 'Autopase', tone: 'gold' });
-      } else {
-        plats[front].push({ t0: T - 0.3, t1: T + 0.18, kind: 'hands', toPoint: co });
-      }
-      ball.push(ballFly(T + AU, T + STEP, cs, 2.0, co, 2.0, 3.8));
-      var runStart = T + AU + 0.12, runDur = STEP - AU - 0.12 - 0.05;
-      vRunKeys(tracks[front], runStart, side, runDur);
-      if (back) {
-        var bs = VSPOT[side + 'b'], fs = VSPOT[side + 'f'];
-        key(tracks[back], runStart + 0.15, bs);
-        key(tracks[back], runStart + 0.15 + Math.min(0.6, runDur * 0.6), fs);
-      }
-      if (i === 0) { ov.push({ type: 'text', t0: runStart + 0.15, t1: runStart + runDur * 0.75, at: [6.1, VNY + 0.85], text: 'Pasa por debajo', tone: 'white' }); }
-      if (AU) {
-        phases.push([T, T + AU, 0], [T + AU, T + AU + 0.35, 1], [T + AU + 0.35, T + STEP, 2]);
-      } else {
-        phases.push([T, T + 0.4, 0], [T + 0.4, T + 1.0, 1], [T + 1.0, T + STEP, 2]);
-      }
-      pos[other + 'b'] = front; pos[side + 'f'] = back; pos[side + 'b'] = null;
-      side = other;
-    }
-    /* contacto final del ciclo (empalma con el inicio) */
-    plats['1'].push({ t0: 6 * STEP - 0.3, t1: 6 * STEP + 0.01, kind: 'hands', toPoint: AU ? [vcp('A')[0], vcp('A')[1] - 0.01] : vcp('B') });
-    var actors = {};
-    ['1', '2', '3'].forEach(function (id) {
-      actors[id] = { role: 'player', label: id, track: tracks[id], face: { byNet: VNY }, plat: plats[id] };
-    });
-    return { actors: actors, ball: ball, ov: ov, phases: phases, dur: 6 * STEP };
+  /* un lanzamiento: el lanzador tira a la frente del jugador y el jugador le devuelve el voleo a las manos */
+  function vToss(seg, plat, L, Lid, J, T, o) {
+    var c = toward(J, L, 0.42), lh = toward(L, J, 0.55);
+    var fl = o.fly || 0.9, bk = o.back || 0.85;
+    seg.push(ballFly(T, T + fl, lh, 1.1, c, 2.0, o.peak || 3.0));
+    plat.push({ t0: T + fl - 0.3, t1: T + fl + 0.12, kind: 'hands', toPoint: lh });
+    seg.push(ballFly(T + fl, T + fl + bk, c, 2.0, lh, 1.1, o.peakBack || 3.3));
+    return T + fl + bk;
   }
-  function voleoBg(age) {
-    return function (g) {
-      floorNet(g, 7.4, 9.6, VNY, {});
-      smallLabel(g, 1.25, 0.9, 'LADO DE 1', { size: 12, fill: 'rgba(255,255,255,0.6)' });
-      smallLabel(g, 1.25, 8.75, 'LADO DE 2', { size: 12, fill: 'rgba(255,255,255,0.6)' });
-      smallLabel(g, 1.25, 9.1, 'empieza aquí', { size: 11, fill: 'rgba(255,207,40,0.9)', ls: 0 });
-    };
-  }
+  function holdUntil(seg, who, t0, t1) { if (t1 > t0 + 0.001) { seg.push(ballHold(who, t0, t1, { h: 1.1 })); } }
 
   SCENES.v1 = function (age) {
-    var r = voleoRotation({ step: 1.5, auto: 0 });
-    return {
-      W: 7.4, H: 9.6, dur: r.dur,
-      label: 'Drill V1 Volea y sigue: en tríos, el jugador volea por encima de la malla y pasa por debajo de la malla a la fila de enfrente.',
-      bg: voleoBg(age), actors: r.actors, ball: r.ball, overlays: r.ov, phases: r.phases
-    };
-  };
-  SCENES.v2 = function (age) {
-    var r = voleoRotation({ step: 2.1, auto: 0.8 });
-    return {
-      W: 7.4, H: 9.6, dur: r.dur,
-      label: 'Drill V2 Arriba y pasa: el jugador hace un autopase y luego volea al compañero del otro lado.',
-      bg: voleoBg(age), actors: r.actors, ball: r.ball, overlays: r.ov, phases: r.phases
-    };
-  };
-  SCENES.v3 = function (age) {
-    var A1 = [2.2, 6.8], A2 = [5.0, 6.8], B = [3.6, 2.7];
-    var c1 = [A1[0], A1[1] - 0.45], c2 = [A2[0], A2[1] - 0.45], cb = [B[0], B[1] + 0.95];
-    var C = 4.6, N = 2;
-    var ball = [], ov = [], phases = [];
-    var p1 = [], p2 = [], pb = [];
-    var f1 = [], aB = angleTo(A1, B), aSide = angleTo(A1, A2);
+    var cfg = { '7-8': [2.5, 1.5], '9-10': [3.0, 2.0], '11-12': [4.0, 3.0] }[age] || [3.0, 2.0];
+    var D = cfg[0], G = cfg[1];
+    var W = 7.6, yL = 1.9, yJ = yL + D, H = yJ + 2.3;
+    var L1 = [W / 2 - G / 2, yL], L2 = [W / 2 + G / 2, yL];
+    var P1 = [L1[0], yJ], P2 = [L2[0], yJ];
+    var C = 4.4, N = 2;
+    var b1 = [], b2 = [], plat = [], ov = [], phases = [], jt = [[0, P1[0], P1[1]]];
+    var last1 = 0, last2 = 0;
     for (var k = 0; k < N; k++) {
       var T = k * C;
-      ball.push(ballFly(T, T + 0.8, c1, 2.0, c1, 2.0, 3.2));
-      ball.push(ballFly(T + 0.8, T + 1.8, c1, 2.0, c2, 2.0, 3.1));
-      ball.push(ballFly(T + 1.8, T + 3.2, c2, 2.0, cb, 2.0, 3.8));
-      ball.push(ballFly(T + 3.2, T + C, cb, 2.0, c1, 2.0, 3.8));
-      p1.push({ t0: T - 0.3, t1: T + 0.15, kind: 'hands', toPoint: [c1[0], c1[1] - 0.01] });
-      p1.push({ t0: T + 0.55, t1: T + 0.98, kind: 'hands', toPoint: c2 });
-      p2.push({ t0: T + 1.55, t1: T + 1.98, kind: 'hands', toPoint: cb });
-      pb.push({ t0: T + 2.95, t1: T + 3.38, kind: 'hands', toPoint: c1 });
-      f1.push([T, aB], [T + 0.45, aB], [T + 0.7, aSide], [T + 1.0, aSide], [T + 1.6, aB]);
-      ov.push({ type: 'text', t0: T + 0.05, t1: T + 0.8, at: [A1[0], A1[1] + 0.95], text: 'Autopase', tone: 'gold' });
-      ov.push({ type: 'text', t0: T + 0.85, t1: T + 1.75, at: [(A1[0] + A2[0]) / 2, A1[1] + 0.95], text: 'Al lado', tone: 'gold' });
-      phases.push([T, T + 0.8, 0], [T + 0.8, T + 1.8, 1], [T + 1.8, T + 3.2, 2], [T + 3.2, T + C, 3]);
+      holdUntil(b1, 'L1', last1, T + 0.25);
+      last1 = vToss(b1, plat, L1, 'L1', P1, T + 0.25, {});
+      key(jt, T + 1.3, P1); key(jt, T + 2.2, P2);
+      holdUntil(b2, 'L2', last2, T + 2.15);
+      last2 = vToss(b2, plat, L2, 'L2', P2, T + 2.15, {});
+      key(jt, T + 3.2, P2); key(jt, T + 4.1, P1);
+      ov.push({ type: 'arrow', t0: T + 1.2, t1: T + 2.25, from: [P1[0] + 0.35, yJ + 0.8], to: [P2[0] - 0.3, yJ + 0.8] });
+      ov.push({ type: 'text', t0: T + 1.25, t1: T + 2.2, at: [W / 2, yJ + 1.4], text: 'De lado', tone: 'gold' });
+      ov.push({ type: 'text', t0: T + 2.3, t1: T + 3.0, at: [P2[0], yJ + 0.9], text: 'Para y volea', tone: 'white' });
+      ov.push({ type: 'arrow', t0: T + 3.1, t1: T + 4.15, from: [P2[0] - 0.35, yJ + 0.8], to: [P1[0] + 0.3, yJ + 0.8] });
+      phases.push([T, T + 1.25, 0], [T + 1.25, T + 2.3, 1], [T + 2.3, T + 3.2, 2], [T + 3.2, T + C, 2]);
     }
-    p1.push({ t0: N * C - 0.3, t1: N * C + 0.01, kind: 'hands', toPoint: [c1[0], c1[1] - 0.01] });
-    f1.push([N * C, aB]);
+    holdUntil(b1, 'L1', last1, N * C); holdUntil(b2, 'L2', last2, N * C);
     return {
-      W: 7.4, H: 9.6, dur: C * N,
-      label: 'Drill V3 Tres toques: autopase, voleo al compañero del mismo lado y voleo al compañero del otro lado de la malla.',
+      W: W, H: H, dur: C * N,
+      label: 'Drill V1 Lateral: dos lanzadores tiran el balón y el jugador le volea a cada uno, moviéndose de lado entre los dos.',
       bg: function (g) {
-        floorNet(g, 7.4, 9.6, VNY, {});
-        smallLabel(g, 1.25, 0.9, 'LADO DE 1', { size: 12, fill: 'rgba(255,255,255,0.6)' });
-        smallLabel(g, 3.6, 8.9, 'LADO DE 2 · EMPIEZA AQUÍ', { size: 12, fill: 'rgba(255,255,255,0.6)' });
+        floorPairs(g, W, H, { dim: { x: 0.75, y0: yL, y1: yJ, label: D + ' m' } });
+        dimH(g, 0.75, L1[0], L2[0], G + ' m');
       },
       actors: {
-        '1': { role: 'player', label: '1', track: [[0, A1[0], A1[1]]], faceTrack: f1, plat: p1 },
-        '2': { role: 'player', label: '2', track: [[0, A2[0], A2[1]]], face: { toPoint: B }, plat: p2 },
-        '3': { role: 'partner', label: '3', track: [[0, B[0], B[1]]], face: { toPoint: A1 }, plat: pb }
+        L1: { role: 'partner', label: 'L1', track: [[0, L1[0], L1[1]]], face: { toActor: 'J' } },
+        L2: { role: 'partner', label: 'L2', track: [[0, L2[0], L2[1]]], face: { toActor: 'J' } },
+        J: { role: 'player', label: 'J', track: jt, face: { angle: 0 }, plat: plat }
       },
-      ball: ball, overlays: ov, phases: phases
+      balls: [b1, b2], overlays: ov, phases: phases
+    };
+  };
+
+  SCENES.v2 = function (age) {
+    var d = { '7-8': 0.85, '9-10': 1.2, '11-12': 1.55 }[age] || 1.2;
+    var W = 7.8, H = 8.0;
+    var P0 = [3.9, 4.4], L1 = [3.9, 1.3];
+    var L2s = { R: [6.7, 2.3], L: [1.1, 2.3] };
+    var PB = { R: [P0[0] + d, P0[1] + d], L: [P0[0] - d, P0[1] + d] };
+    var C = 4.8, SW = 1.3;
+    var b1 = [], b2 = [], plat = [], ov = [], phases = [];
+    var jt = [[0, P0[0], P0[1]]], l2t = [[0, L2s.R[0], L2s.R[1]]], jf = [[0, 0]];
+    var last1 = 0, last2 = 0, T = 0;
+    ['R', 'L'].forEach(function (sd, k) {
+      var L2 = L2s[sd], pb = PB[sd], aB = angleTo(pb, L2);
+      holdUntil(b1, 'L1', last1, T + 0.25);
+      last1 = vToss(b1, plat, L1, 'L1', P0, T + 0.25, {});
+      holdUntil(b2, 'L2', last2, T + 1.95);
+      var c = toward(pb, L2, 0.42), lh = toward(L2, pb, 0.55);
+      b2.push(ballFly(T + 1.95, T + 3.0, lh, 1.1, c, 2.0, 3.7));
+      plat.push({ t0: T + 2.7, t1: T + 3.12, kind: 'hands', toPoint: lh });
+      b2.push(ballFly(T + 3.0, T + 3.85, c, 2.0, lh, 1.1, 3.3));
+      last2 = T + 3.85;
+      key(jt, T + 2.05, P0); key(jt, T + 2.85, pb); key(jt, T + 3.35, pb); key(jt, T + 4.3, P0);
+      jf.push([T + 2.0, 0], [T + 2.6, aB], [T + 3.4, aB], [T + 4.2, 0]);
+      ov.push({ type: 'arrow', t0: T + 1.95, t1: T + 2.95, from: toward(P0, pb, 0.5), to: toward(pb, P0, 0.4) });
+      ov.push({ type: 'text', t0: T + 2.0, t1: T + 2.95, at: [P0[0], H - 0.9], text: 'Atrás en diagonal', tone: 'gold' });
+      phases.push([T, T + 1.95, 0], [T + 1.95, T + 2.95, 1], [T + 2.95, T + C, 2]);
+      T += C;
+      var to = L2s[sd === 'R' ? 'L' : 'R'];
+      key(l2t, T, L2); key(l2t, T + SW, to);
+      ov.push({ type: 'text', t0: T, t1: T + SW, at: [W / 2, 3.2], text: 'L2 cambia de lado', tone: 'gold' });
+      phases.push([T, T + SW, 3]);
+      T += SW;
+    });
+    holdUntil(b1, 'L1', last1, T); holdUntil(b2, 'L2', last2, T);
+    return {
+      W: W, H: H, dur: T,
+      label: 'Drill V2 Diagonal atrás: el jugador le volea a L1 de frente, se mueve hacia atrás en diagonal y le volea a L2; L2 cambia de lado para trabajar los dos lados.',
+      bg: function (g) {
+        floorPairs(g, W, H, {});
+        el('circle', { cx: px(P0[0]), cy: px(P0[1]), r: 7, fill: 'none', stroke: 'rgba(255,255,255,0.5)', 'stroke-width': 2, 'stroke-dasharray': '3 4' }, g);
+        smallLabel(g, P0[0], P0[1] + 0.75, 'CENTRO', { size: 11, fill: 'rgba(255,255,255,0.55)' });
+        smallLabel(g, L2s.R[0], L2s.R[1] - 0.75, 'LADO 1', { size: 11, fill: 'rgba(255,207,40,0.85)', ls: 1 });
+        smallLabel(g, L2s.L[0], L2s.L[1] - 0.75, 'LADO 2', { size: 11, fill: 'rgba(255,207,40,0.85)', ls: 1 });
+      },
+      actors: {
+        L1: { role: 'partner', label: 'L1', track: [[0, L1[0], L1[1]]], face: { toActor: 'J' } },
+        L2: { role: 'partner', label: 'L2', track: l2t, face: { toActor: 'J' } },
+        J: { role: 'player', label: 'J', track: jt, faceTrack: jf, plat: plat }
+      },
+      balls: [b1, b2], overlays: ov, phases: phases
+    };
+  };
+
+  SCENES.v3 = function (age) {
+    var cfg = age === '11-12' ? [3.0, 5.5] : [2.0, 4.0];
+    var SH = cfg[0], LG = cfg[1];
+    var W = 7.6, x0 = 3.8, dx = 0.95;
+    var P0 = [x0, 5.0], P1 = [x0, 5.7], P2 = [x0, 6.6], H = 8.0;
+    var L1 = [x0 - dx, P1[1] - Math.sqrt(SH * SH - dx * dx)], L2 = [x0 + dx, P2[1] - Math.sqrt(LG * LG - dx * dx)];
+    var C = 5.4, N = 2;
+    var b1 = [], b2 = [], plat = [], ov = [], phases = [], jt = [[0, P0[0], P0[1]]], jf = [];
+    var a1 = angleTo(P1, L1), a2 = angleTo(P2, L2);
+    var last1 = 0, last2 = 0;
+    for (var k = 0; k < N; k++) {
+      var T = k * C;
+      holdUntil(b1, 'L1', last1, T + 0.2);
+      last1 = vToss(b1, plat, L1, 'L1', P1, T + 0.2, { fly: 1.0, back: 0.8, peak: 2.9, peakBack: 2.9 });
+      key(jt, T + 0.3, P0); key(jt, T + 0.95, P1);
+      holdUntil(b2, 'L2', last2, T + 2.0);
+      last2 = vToss(b2, plat, L2, 'L2', P2, T + 2.0, { fly: 1.2, back: 1.3, peak: 3.9, peakBack: 4.8 });
+      key(jt, T + 2.1, P1); key(jt, T + 2.9, P2); key(jt, T + 3.6, P2); key(jt, T + 4.8, P0);
+      jf.push([T, a1], [T + 1.9, a1], [T + 2.4, a2], [T + 3.6, a2], [T + 4.6, a1]);
+      ov.push({ type: 'text', t0: T + 1.2, t1: T + 2.0, at: [(L1[0] + P1[0]) / 2 - 1.1, (L1[1] + P1[1]) / 2], text: 'Corto', tone: 'gold' });
+      ov.push({ type: 'text', t0: T + 3.2, t1: T + 4.5, at: [(L2[0] + P2[0]) / 2 + 1.2, (L2[1] + P2[1]) / 2 - 1.1], text: 'Largo', tone: 'gold' });
+      ov.push({ type: 'arrow', t0: T + 0.25, t1: T + 1.0, from: [P0[0] + 0.62, P0[1] - 0.1], to: [P1[0] + 0.62, P1[1] + 0.25] });
+      ov.push({ type: 'arrow', t0: T + 2.05, t1: T + 2.95, from: [P1[0] + 0.62, P1[1]], to: [P2[0] + 0.62, P2[1] + 0.3] });
+      ov.push({ type: 'text', t0: T + 2.1, t1: T + 2.95, at: [P2[0], H - 0.5], text: 'Más atrás', tone: 'white' });
+      phases.push([T, T + 2.0, 0], [T + 2.0, T + 3.55, 1], [T + 3.55, T + C, 2]);
+    }
+    jf.push([N * C, a1]);
+    holdUntil(b1, 'L1', last1, N * C); holdUntil(b2, 'L2', last2, N * C);
+    return {
+      W: W, H: H, dur: C * N,
+      label: 'Drill V3 Corto y largo: el jugador se mueve un poco atrás y le volea corto a L1, que está cerca; después se mueve más atrás y le volea largo a L2, que está lejos.',
+      bg: function (g) {
+        floorPairs(g, W, H, {});
+        dimLine(g, { x: 0.75, y0: L1[1], y1: P1[1], label: SH + ' m' });
+        dimLine(g, { x: W - 0.75, y0: L2[1], y1: P2[1], label: LG + ' m' });
+        smallLabel(g, L1[0], L1[1] - 0.72, 'CERCA', { size: 11, fill: 'rgba(255,207,40,0.85)', ls: 1 });
+        smallLabel(g, L2[0], L2[1] - 0.72, 'LEJOS', { size: 11, fill: 'rgba(255,207,40,0.85)', ls: 1 });
+        el('circle', { cx: px(P0[0]), cy: px(P0[1]), r: 7, fill: 'none', stroke: 'rgba(255,255,255,0.5)', 'stroke-width': 2, 'stroke-dasharray': '3 4' }, g);
+      },
+      actors: {
+        L1: { role: 'partner', label: 'L1', track: [[0, L1[0], L1[1]]], face: { toActor: 'J' } },
+        L2: { role: 'partner', label: 'L2', track: [[0, L2[0], L2[1]]], face: { toActor: 'J' } },
+        J: { role: 'player', label: 'J', track: jt, faceTrack: jf, plat: plat }
+      },
+      balls: [b1, b2], overlays: ov, phases: phases
+    };
+  };
+
+  SCENES.v4 = function (age) {
+    var D = { '7-8': 3.0, '9-10': 4.0, '11-12': 4.5 }[age] || 4.0;
+    var W = 7.4, MID = 4.7, H = 9.4, X = 3.7, SIDE = 1.45;
+    var SP = { Af: [X, MID + D / 2], Ab: [X, MID + D / 2 + 1.1], Bf: [X, MID - D / 2], Bb: [X, MID - D / 2 - 1.1] };
+    var kinds = age === '7-8' ? ['up', 'up', 'up', 'up', 'up', 'up'] : ['up', 'up', 'side', 'side', 'direct', 'direct'];
+    var STEPT = { up: 2.0, side: 2.25, direct: 1.6 }, AUT = { up: 0.8, side: 0.95, direct: 0 };
+    function cpt(side, p) { return [p[0], p[1] + (side === 'A' ? -0.42 : 0.42)]; }
+    var pos = { Af: '1', Ab: '2', Bf: '3', Bb: null };
+    var tracks = { '1': [[0, SP.Af[0], SP.Af[1]]], '2': [[0, SP.Ab[0], SP.Ab[1]]], '3': [[0, SP.Bf[0], SP.Bf[1]]] };
+    var plats = { '1': [], '2': [], '3': [] };
+    var ball = [], ov = [], phases = [];
+    var side = 'A', T = 0, firstSide = true, firstDirect = true;
+    for (var i = 0; i < kinds.length; i++) {
+      var kd = kinds[i], other = side === 'A' ? 'B' : 'A';
+      var STEP = STEPT[kd], AU = AUT[kd];
+      var front = pos[side + 'f'], back = pos[side + 'b'];
+      var f = SP[side + 'f'], cs = cpt(side, f), co = cpt(other, SP[other + 'f']);
+      var from = f, cv = cs;
+      if (kd === 'up') {
+        ball.push(ballFly(T, T + AU, cs, 2.0, cs, 2.0, 3.3));
+        plats[front].push({ t0: T - 0.3, t1: T + 0.12, kind: 'hands', toPoint: [cs[0], cs[1] - 0.01] });
+        if (i < 2) { ov.push({ type: 'text', t0: T + 0.05, t1: T + AU, at: [X - 1.9, cs[1]], text: 'Autovoleo', tone: 'gold' }); }
+      } else if (kd === 'side') {
+        var sx = (i % 2 === 0 ? 1 : -1) * 0.7;
+        from = [f[0] + sx, f[1]]; cv = cpt(side, from);
+        ball.push(ballFly(T, T + AU, cs, 2.0, cv, 2.0, 3.4));
+        plats[front].push({ t0: T - 0.3, t1: T + 0.12, kind: 'hands', toPoint: [cv[0], cv[1] - 0.01] });
+        key(tracks[front], T + 0.1, f); key(tracks[front], T + AU - 0.15, from);
+        if (firstSide) { ov.push({ type: 'text', t0: T + 0.05, t1: T + AU, at: [X, MID + (side === 'A' ? -1.0 : 1.0)], text: 'Autovoleo al lado · paso', tone: 'gold' }); firstSide = false; }
+      } else if (firstDirect) {
+        ov.push({ type: 'text', t0: T, t1: T + 1.1, at: [X, side === 'A' ? 1.0 : H - 1.0], text: 'Voleo corrido', tone: 'gold' }); firstDirect = false;
+      }
+      plats[front].push({ t0: T + AU - 0.25, t1: T + AU + 0.15, kind: 'hands', toPoint: co });
+      ball.push(ballFly(T + AU, T + STEP, cv, 2.0, co, 2.0, 3.8));
+      /* sale por su derecha: lado A mira hacia arriba (derecha = +x); lado B mira hacia abajo (derecha = -x) */
+      var sg = side === 'A' ? 1 : -1, tb = SP[other + 'b'];
+      var r0 = T + AU + 0.12, rd = STEP - AU - 0.17;
+      var w1 = [X + sg * SIDE, from[1] - sg * 0.35], w2 = [X + sg * SIDE, tb[1] + sg * 0.35];
+      key(tracks[front], r0, from); key(tracks[front], r0 + rd * 0.3, w1, true); key(tracks[front], r0 + rd * 0.75, w2, true); key(tracks[front], r0 + rd, tb);
+      if (i === 0) {
+        ov.push({ type: 'path', t0: r0, t1: r0 + rd, pts: [toward(from, w1, 0.4), w1, w2, toward(tb, w2, 0.45)] });
+        ov.push({ type: 'text', t0: r0 - 0.1, t1: r0 + rd * 0.55, at: [5.75, SP.Af[1] + 0.95], text: 'Por la derecha', tone: 'white' });
+      }
+      if (back) { key(tracks[back], r0 + 0.15, SP[side + 'b']); key(tracks[back], r0 + 0.15 + Math.min(0.6, rd * 0.6), f); }
+      if (kd === 'up') { phases.push([T, T + AU, 0], [T + AU, T + AU + 0.35, 1], [T + AU + 0.35, T + STEP, 2]); }
+      else { phases.push([T, T + STEP, kd === 'side' ? 3 : 4]); }
+      pos[other + 'b'] = front; pos[side + 'f'] = back; pos[side + 'b'] = null;
+      side = other; T += STEP;
+    }
+    var k0 = kinds[0], c0 = cpt('A', SP.Af);
+    plats['1'].push({ t0: T - 0.3, t1: T + 0.01, kind: 'hands', toPoint: k0 === 'direct' ? cpt('B', SP.Bf) : [c0[0], c0[1] - 0.01] });
+    var actors = {};
+    ['1', '2', '3'].forEach(function (id) {
+      actors[id] = { role: 'player', label: id, track: tracks[id], face: { byNet: MID }, plat: plats[id] };
+    });
+    return {
+      W: W, H: H, dur: T,
+      label: 'Drill V4 Autovoleo y sigue: dos en una fila y uno enfrente; el jugador se hace un autovoleo, le volea al de enfrente y sale por la derecha a la otra fila.',
+      bg: function (g) {
+        floorPairs(g, W, H, { dim: { x: 0.75, y0: SP.Bf[1], y1: SP.Af[1], label: D + ' m' } });
+        smallLabel(g, X, H - 0.4, 'FILA DE 2 · EMPIEZA AQUÍ', { size: 12, fill: 'rgba(255,255,255,0.6)' });
+        smallLabel(g, X, 0.45, 'FILA DE 1', { size: 12, fill: 'rgba(255,255,255,0.6)' });
+      },
+      actors: actors, ball: ball, overlays: ov, phases: phases
     };
   };
 
