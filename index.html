@@ -689,7 +689,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
       </div>
       <div class="card coach-only">
         <h3>Material y <span class="g">organización</span></h3>
-        <p class="org"><b>Material:</b> bolas de tenis (1 por jugador), balones para A3 y A4, conos para las filas y 2 aros por fila para A0.<br><b>Filas:</b> 4, 2 y 6 en A1 y A2; 4 y 2 en A3 y A4. En A4 el coach lanza desde la zona 3.<br><b>Bolas:</b> se recogen al final de cada ronda; ese es el descanso entre saltos.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
+        <p class="org"><b>Material:</b> bolas de tenis (1 por jugador), balones para A3 y A4, conos para las filas y 2 aros por fila para A0.<br><b>Filas:</b> 4, 2 y 6 en A0, A1 y A2; 4 y 2 en A3 y A4. En A4 el coach lanza desde la zona 3.<br><b>Bolas:</b> se recogen al final de cada ronda; ese es el descanso entre saltos.<br><b>Cambio de drill:</b> 30 segundos para explicar el siguiente.</p>
       </div>
       <div class="card player-only">
         <h3>Lo que vamos a <span class="g">buscar</span></h3>
@@ -702,7 +702,7 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
       <div class="d-head">
         <span class="code">A0</span>
         <h3 class="d-name">Pasos y lanza</h3>
-        <div class="chips"><span class="chip t" data-agev="7-8">15 min</span><span class="chip">Filas en 4, 3 y 2</span><span class="chip">2 aros por fila</span><span class="chip">Bola de tenis</span></div>
+        <div class="chips"><span class="chip t" data-agev="7-8">15 min</span><span class="chip">Filas en 4, 2 y 6</span><span class="chip">2 aros por fila</span><span class="chip">Bola de tenis</span></div>
       </div>
       <div class="na"><span><b>Solo para 7–8U.</b> Las demás categorías empiezan en A1.</span></div>
       <div class="d-grid">
@@ -1690,12 +1690,13 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
   };
 
   SCENES.a0 = function (age) {
-    var lanes = [2.7, 5.7, 8.7];
-    var REP = 3.4, H = 9.6;
+    /* filas en 4, 2 y 6 (mismo orden que A1); la fila 6 hace los pasos detras de la linea de 3 m */
+    var lanes = [{ x: 2.7, dy: 0 }, { x: 8.7, dy: 0 }, { x: 5.7, dy: 1.7 }];
+    var REP = 3.4, H = 11.0;
     var actors = {}, ball = [], ov = [], phases = [];
     for (var k = 0; k < lanes.length; k++) {
-      var x = lanes[k], T = k * REP;
-      var Ls = [x, 7.7], H1 = [x + 0.15, 5.95], H2 = [x, 4.3], tg = [x, 0.8];
+      var x = lanes[k].x, dy = lanes[k].dy, T = k * REP;
+      var Ls = [x, 7.7 + dy], H1 = [x + 0.15, 5.95 + dy], H2 = [x, 4.3 + dy], tg = [x, 0.8];
       var tr = [];
       if (T > 0) { key(tr, 0, Ls); }
       key(tr, T, Ls); key(tr, T + 0.3, Ls); key(tr, T + 0.75, H1, true); key(tr, T + 1.15, H2);
@@ -1713,15 +1714,15 @@ table.sched tr.agua td{color:var(--muted);font-size:15px}
     }
     return {
       W: 11.4, H: H, dur: REP * lanes.length,
-      label: 'Drill A0 Pasos y lanza: el jugador pisa un aro con el pie derecho, cierra con los dos pies en el segundo aro y lanza la bola de tenis por encima de la malla.',
+      label: 'Drill A0 Pasos y lanza: filas en zonas 4, 2 y 6. El jugador pisa un aro con el pie derecho, cierra con los dos pies en el segundo aro y lanza la bola de tenis por encima de la malla.',
       bg: function (g) {
-        halfCourt(g, 11.4, H, ACX, ANY, false);
+        halfCourt(g, 11.4, H, ACX, ANY, true);
         for (var i = 0; i < lanes.length; i++) {
-          hoop(g, [lanes[i] + 0.15, 5.95], 0.36, 'D', true);
-          hoop(g, [lanes[i], 4.3], 0.55, '2 PIES', true);
-          bigText(g, lanes[i], 3.05, ['4', '3', '2'][i], { size: 36 });
+          hoop(g, [lanes[i].x + 0.15, 5.95 + lanes[i].dy], 0.36, 'D', true);
+          hoop(g, [lanes[i].x, 4.3 + lanes[i].dy], 0.55, '2 PIES', true);
         }
-        queueDots(g, [[2.7, 8.6], [5.7, 8.6], [8.7, 8.6]]);
+        queueDots(g, [[2.7, 8.6], [8.7, 8.6], [5.7, 10.3]]);
+        smallLabel(g, 0.3, H - 0.4, 'FILAS 4 · 2 · 6', { size: 13, anchor: 'start', fill: '#FFFFFF', ls: 1.5 });
       },
       actors: actors, ball: ball, overlays: ov, phases: phases
     };
