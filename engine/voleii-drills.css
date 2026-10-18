@@ -1,0 +1,64 @@
+/* =====================================================================
+   VOLEII · MOTOR DE DRILLS ANIMADOS · estilos del diagrama
+   (c) Carlos Torres · VOLEII. Todos los derechos reservados.
+   Variables con los colores de Vaqueros por defecto; la app las redefine
+   después de cargar este archivo si el equipo es otro.
+   ===================================================================== */
+:root{
+  --navy:#061633;
+  --navy3:#14336E;
+  --blue:#013C9D;
+  --gold:#FFCF28;
+  --white:#FFFFFF;
+  --soft:#D8E2F5;
+  --line:rgba(255,255,255,.12);
+  --line2:rgba(255,255,255,.22);
+  --radius:16px;
+  --dia-bg:#071C42;
+}
+
+/* ---------- Diagrama ---------- */
+.dia{background:var(--dia-bg);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.dia .stage{padding:10px;display:flex;justify-content:center;background:radial-gradient(500px 300px at 50% 0%, rgba(1,60,157,.35), transparent 70%)}
+.dia svg.main{display:block;width:100%;height:auto;max-height:78vh}
+.dia .ctrls{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:rgba(6,22,51,.6)}
+.dia .btn{font:inherit;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:6px;color:var(--white);background:var(--navy3);border:1px solid var(--line2);border-radius:10px;padding:7px 10px;cursor:pointer;line-height:1}
+.dia .btn:hover{border-color:var(--gold)}
+.dia .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.dia .btn.play{background:var(--gold);color:var(--navy);border-color:var(--gold);min-width:44px;justify-content:center}
+.dia input[type=range]{flex:1;min-width:60px;accent-color:var(--gold)}
+
+/* ---------- Leyenda ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--soft)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg-dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.lg-p{background:var(--gold);border:2px solid var(--navy)}
+.lg-c{background:#fff;border:2px solid var(--navy)}
+.lg-t{background:transparent;border:2px dashed var(--gold)}
+.lg-l{width:22px;height:0;border-top:2px dashed var(--gold);display:inline-block}
+.lg-pl{width:16px;height:5px;background:#fff;border-radius:2px;display:inline-block;box-shadow:0 0 0 1px var(--navy)}
+
+/* ---------- Recuadros (vista lateral, postura) ---------- */
+.inset{border-top:1px solid var(--line);padding:8px 12px 12px;background:rgba(6,22,51,.45)}
+.inset .k{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.inset svg{display:block;width:100%;height:auto;max-width:420px;margin:0 auto}
+.inset svg.side{max-width:460px}
+
+/* ---------- Pasos (se iluminan con las fases) ---------- */
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.steps li{display:flex;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:background .2s, border-color .2s}
+.steps li:hover{background:rgba(255,255,255,.04)}
+.steps li .n{flex:0 0 28px;height:28px;border-radius:8px;background:var(--navy3);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:700}
+.steps li b{display:block;font-size:18px;line-height:1.15}
+.steps li p{margin:2px 0 0;color:var(--soft);font-size:16px}
+.steps li.on{background:rgba(1,60,157,.5);border-color:var(--gold)}
+.steps li.on .n{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.steps li.nophase{cursor:default}
+.steps li.nophase:hover{background:none}
+@media (prefers-reduced-motion: reduce){ .steps li{transition:none} }
+
+/* ---------- Pasos que solo aplican a ciertas categorías ---------- */
+.steps li[data-agev]{display:none}
+body[data-age="7-8"] .steps li[data-agev~="7-8"],
+body[data-age="9-10"] .steps li[data-agev~="9-10"],
+body[data-age="11-12"] .steps li[data-agev~="11-12"]{display:flex}
