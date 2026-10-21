@@ -228,7 +228,7 @@
     var B5 = [cx0 + 1.5, NY + 5.4], B6 = [cx0 + 4.5, NY + 5.4], B1 = [cx0 + 7.5, NY + 5.4];
     var TG = { '7-8': { p: [cx0 + 4.5, NY + 2.6], r: 0.8, txt: 'TARGET · ZONA 3' },
                '9-10': { p: [cx0 + 4.5, NY + 1.5], r: 1.1, txt: 'TARGET · CENTRO' },
-               '11-12': { p: [cx0 + 6.0, NY + 0.95], r: 0.7, txt: 'TARGET · ENTRE 2 Y 3' } }[age];
+               '11-12': { p: [cx0 + 5.0, NY + 0.8], r: 0.7, txt: 'TARGET · ENTRE 2 Y 3' } }[age];
     var TP = [TG.p[0], TG.p[1]];
     var REP = 3.6;
     var reps = [

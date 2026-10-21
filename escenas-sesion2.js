@@ -31,7 +31,7 @@
   function tgt(age, ny) {
     var t = { '7-8': { p: [CX + 4.5, ny + 2.6], r: 0.8, txt: 'TARGET · ZONA 3' },
               '9-10': { p: [CX + 4.5, ny + 1.5], r: 1.1, txt: 'TARGET · CENTRO' },
-              '11-12': { p: [CX + 6.0, ny + 0.95], r: 0.7, txt: 'TARGET · ENTRE 2 Y 3' } }[age];
+              '11-12': { p: [CX + 5.0, ny + 0.8], r: 0.7, txt: 'TARGET · ENTRE 2 Y 3' } }[age];
     return t || { p: [CX + 4.5, ny + 1.5], r: 1.1, txt: 'TARGET · CENTRO' };
   }
 
@@ -280,7 +280,7 @@
            : { id: 'Z2', S: [9.3, ny + 7.0], J: [8.3, ny + 1.2], tg: diagTarget(G, false) }
     ];
     var CO = back ? [CX + 4.5, ny + 4.6] : [6.6, ny + 1.6];
-    var SET = [CX + 6.0, ny + 0.95];
+    var SET = [CX + 5.0, ny + 0.8];  /* target del colocador: 5 m desde la lateral de la zona 4, 0,8 m de la malla (igual que voleii-system) */
     var times = [0.85, 1.25, 1.6, 1.85], fr = [0.25, 0.55, 0.9, 1.0], sides = [1, -1, 1, -1];
     var actors = {}, ball = [], ov = [], phases = [], cof = [], platS = [];
     var cnt = 0;
