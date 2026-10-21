@@ -67,7 +67,7 @@
     var R = { R5: [CX + 1.5, ry], R6: [CX + 4.5, ry], R1: [CX + 7.5, ry] };
     var TG = tgt(age, NY), TP = TG.p;
     var CO = [10.6, NY + 3.4];
-    var REP = 3.8, REP3 = 5.0, ROT = 1.7;
+    var REP = 3.8, REP3 = 5.0, ROT = 2.6;
     var T2 = 2 * REP, TR = T2 + REP3, DUR = TR + ROT;
     var b1 = [], b2 = [], ov = [], phases = [];
     var plat = { R5: [], R6: [], R1: [] }, hi = { R5: [], R6: [], R1: [] };
@@ -124,9 +124,13 @@
 
     /* rotación */
     var qy = SV[1] - 1.6;
-    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R.R6, TP, 0.5), toward(TP, R.R6, TG.r + 0.2)] });
+    /* el que saca entra por el 5; los receptores corren 5 → 6 → 1; el del 1 va al target y el del target a sacar */
+    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [[SV[0] - 0.7, SV[1]], [0.5, SV[1]], [0.5, R.R5[1]], [R.R5[0] - 0.6, R.R5[1]]] });
+    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R.R5, R.R6, 0.55), toward(R.R6, R.R5, 0.55)] });
+    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R.R6, R.R1, 0.55), toward(R.R1, R.R6, 0.55)] });
+    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R.R1, TP, 0.55), toward(TP, R.R1, TG.r + 0.2)] });
     ov.push({ type: 'path', t0: TR, t1: DUR, pts: [[TP[0] + TG.r + 0.1, TP[1]], [11.0, TP[1]], [11.0, qy], [SV[0] + 0.6, qy]] });
-    ov.push({ type: 'text', t0: TR, t1: DUR, at: [WF / 2, HF - 2.0], text: reto ? 'Ronda 2: supera tu marca' : 'Rota: saca, recibe, target y a sacar', tone: 'gold' });
+    ov.push({ type: 'text', t0: TR, t1: DUR, at: [WF / 2, HF - 2.0], text: reto ? 'Ronda 2: supera tu marca' : 'Rota: saque → 5 → 6 → 1 → target', tone: 'gold' });
     phases.push([TR, DUR, 5]);
 
     var aS = { R5: angleTo(R.R5, SV), R6: angleTo(R.R6, SV), R1: angleTo(r1, SV) }, aC = angleTo(r1, CO);
@@ -446,6 +450,7 @@
     var xc = CX + 2.25;
     var f = SERVE_FT[age] || 20, over = age === '11-12';
     var SVsp = [xc, NY - FT[f]];
+    var toss = two && mode === 'coop';  /* MV1 en 7–8U: la jugada empieza con lanzamiento por abajo con dos manos */
     var P = {}, ids, SVid;
     if (two) {
       P = { Ab: [xc, NY - 4.0], As: [xc, NY - 1.5], Bb: [xc, NY + 4.0], Bs: [xc, NY + 1.5] };
@@ -455,6 +460,7 @@
       ids = ['A1', 'A2', 'As', 'B1', 'B2', 'Bs']; SVid = 'A1';
     }
     var tracks = {}, plats = {}, his = {};
+    if (toss) { SVsp = P.Ab.slice(); }
     ids.forEach(function (id) { tracks[id] = [[0, P[id][0], P[id][1]]]; plats[id] = []; his[id] = []; });
     tracks[SVid] = [[0, SVsp[0], SVsp[1]]];
     key(tracks[SVid], 0.8, SVsp); key(tracks[SVid], 1.6, P[SVid]);
@@ -469,9 +475,10 @@
       }
     }
     /* contactos: [actor, posición en el contacto, tipo, tiempo] */
-    var C = [], tEnd, landT;
-    var serveH = 1.2, pk = over ? 3.4 : 4.2;
-    var serveFrom = [SVsp[0], SVsp[1] + 0.62];
+    var C = [], tEnd, landT, desc0 = '';
+    var serveH = toss ? 0.9 : 1.2, pk = toss ? 3.6 : (over ? 3.4 : 4.2);
+    var serveFrom = [SVsp[0], SVsp[1] + (toss ? 0.45 : 0.62)];
+    if (toss) { ov.push({ type: 'text', t0: 0, t1: 1.2, at: [xc + 2.6, SVsp[1]], text: 'Lanza con dos manos', tone: 'gold' }); }
     if (two) {
       var c = [0.6, 1.85, 2.9, 4.5, 5.55, 7.15];
       C.push({ id: 'Bb', pos: P.Bb, k: 'pass', t: c[1], n: 1 });
@@ -556,13 +563,14 @@
     ids.forEach(function (id) {
       actors[id] = { role: isTop(id) ? 'partner' : 'player', label: id === 'As' || id === 'Bs' ? 'CL' : 'J', track: tracks[id], face: { byNet: NY }, plat: plats[id], hi: his[id] };
     });
+    if (toss) { desc0 = ' En 7–8U la jugada empieza con un lanzamiento por abajo con dos manos.'; }
     var labels = { coop: 'Drill MV1 Cooperativo: ', doble: 'Drill MV2 Punto doble: ', tres: 'Drill MV3 Tres toques obligatorios: ' };
     var desc = { coop: 'los dos lados cuentan cuántos balones seguidos pasan la malla con 2 o 3 toques.',
                  doble: 'el mismo juego por puntos; el punto vale doble si el equipo usó 3 toques (2 en 7–8U).',
                  tres: 'el punto solo cuenta si el equipo usó 3 toques (2 en 7–8U).' };
     return {
       W: WF, H: HF, dur: DUR, actorR: 0.42,
-      label: labels[mode] + desc[mode] + ' Cancha dividida a lo largo en dos mini-canchas.',
+      label: labels[mode] + desc[mode] + desc0 + ' Cancha dividida a lo largo en dos mini-canchas.',
       bg: function (g) {
         B.fullCourt(g, WF, HF, CX, CY);
         var dl = el('g', { stroke: M.goldA(0.75), 'stroke-width': 2.5, 'stroke-dasharray': '6 7' }, g);
@@ -580,12 +588,33 @@
         var ghost = ids.map(function (id) { return [P[id][0] + 4.5, P[id][1]]; });
         B.queueDots(g, ghost, 'rgba(255,255,255,0.22)');
         B.queueDots(g, [[0.55, NY - 2.4], [0.55, NY - 3.1], [0.55, NY + 2.4], [0.55, NY + 3.1]]);
-        smallLabel(g, 11.1, 0.55, SERVE_TXT[age] || SERVE_TXT['9-10'], { size: 14, anchor: 'end', fill: COL.gold, ls: 1.5 });
+        smallLabel(g, 11.1, 0.55, toss ? 'EMPIEZA CON LANZAMIENTO' : (SERVE_TXT[age] || SERVE_TXT['9-10']), { size: 14, anchor: 'end', fill: COL.gold, ls: 1.5 });
         smallLabel(g, 0.3, HF - 0.5, 'CUANDO CAE EL BALÓN, ENTRA UNO DE LA FILA', { size: 13, anchor: 'start', fill: '#FFFFFF', ls: 1 });
       },
       actors: actors, ball: b, overlays: ov, phases: phases
     };
   }
+  /* A1 de repaso en la Sesión 2: la misma escena de la Sesión 1, solo con las filas en 4 y 2 */
+  SCENES.a1s2 = function (age) {
+    var sc = SCENES.a1 ? SCENES.a1(age) : null;
+    if (!sc) { return null; }
+    var END = 8.0;  /* 2 repeticiones de 4 s: zona 4 y zona 2 */
+    try {
+      delete sc.actors.Z6;
+      sc.ball = sc.ball.filter(function (b) { return b.t0 < END - 0.001; });
+      sc.overlays = sc.overlays.filter(function (o) { return o.t0 < END - 0.001; });
+      sc.phases = sc.phases.filter(function (p) { return p[0] < END - 0.001; });
+      sc.dur = END;
+      sc.label = 'Drill A1 Lanza sobre la malla: filas en zonas 4 y 2, carrera de 4 pasos y lanzamiento de la bola de tenis por encima de la malla.';
+      sc.bg = function (g) {
+        B.halfCourt(g, 11.4, 13.4, CX, 2.2, true);
+        B.queueDots(g, [[1.9, 10.3], [1.6, 11.1], [9.5, 10.3], [9.8, 11.1]]);
+        smallLabel(g, 0.3, 13.0, 'FILAS 4 · 2', { size: 13, anchor: 'start', fill: '#FFFFFF', ls: 1.5 });
+      };
+    } catch (e) { if (window.console) { console.error('a1s2', e); } }
+    return sc;
+  };
+
   SCENES.mv1 = function (age) { return mvScene(age, 'coop'); };
   SCENES.mv2 = function (age) { return mvScene(age, 'doble'); };
   SCENES.mv3 = function (age) { return mvScene(age, 'tres'); };
