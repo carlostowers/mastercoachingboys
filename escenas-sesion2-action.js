@@ -582,7 +582,7 @@
     var LP = [xc + 0.2, 3.0];
     function isTop(id) { return id.charAt(0) === 'A'; }
     function touchText(id, pos, t, n) {
-      if (mode === 'coop') { if (n === 1) { ov.push({ type: 'text', t0: t - 0.35, t1: t + 0.6, at: [pos[0], pos[1] + (isTop(id) ? -1.15 : 1.15)], text: '¡Mía!', tone: 'gold' }); } }
+      if (mode === 'coop') { if (n === 1) { ov.push({ type: 'text', t0: t - 0.35, t1: t + 0.6, at: [pos[0], pos[1] + (isTop(id) ? -1.15 : 1.15)], text: '¡Yo!', tone: 'gold' }); } }
       else { ov.push({ type: 'text', t0: t - 0.1, t1: t + 0.75, at: [pos[0] + 1.0, pos[1]], text: String(n), tone: 'white' }); }
     }
     /* el saque (o el lanzamiento en el MV1 de 7–8U) */
@@ -646,7 +646,7 @@
       ov.push({ type: 'text', t0: (prevT + landT) / 2, t1: (prevT + landT) / 2 + 1.2, at: [6.8, 2.6], text: 'Pasó ' + crossings, tone: 'gold' });
       plats[rid].push({ t0: landT - 0.45, t1: landT + 0.3, toPoint: P.Bs });
       his[rid].push([landT - 0.7, landT + 0.4]);
-      ov.push({ type: 'text', t0: landT - 0.35, t1: landT + 0.6, at: [rpos[0], rpos[1] + 1.15], text: '¡Mía!', tone: 'gold' });
+      ov.push({ type: 'text', t0: landT - 0.35, t1: landT + 0.6, at: [rpos[0], rpos[1] + 1.15], text: '¡Yo!', tone: 'gold' });
       b.push(ballHold(null, landT, landT + 0.6, { h: H.plat, at: rcp, fout: 0.5 }));
       tEnd = landT + 0.6;
       ov.push({ type: 'text', t0: landT, t1: landT + 1.6, at: [6.8, 7.4], text: '¡Y sigue la cuenta!', tone: 'white' });

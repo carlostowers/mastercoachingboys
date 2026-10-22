@@ -19,7 +19,9 @@
 
    Vista 3D (2.1): cámaras Normal, Receptor, Lateral y Sigue la jugada; con el dedo gira 360°, sube o baja
    la cámara y acerca (pellizco); doble toque vuelve. Velocidad 1x, 0.5x y 0.25x.
-   Pisos: A.setFloor('losetas' | 'sintetico' | 'madera') o mount({ floor }).
+   Pisos: A.setFloor('sintetico' | 'madera' | 'losetas') o mount({ floor }).
+   Carrera (2.2): las huellas de la escena (overlays 'foot') son donde pisan los pies; la carrera sale
+   derecho, izquierdo, derecho, izquierdo y cierra con el izquierdo al frente, igual que la vista lateral.
 
    Sin dependencias, sin build. Expone window.VOLEII.Action.
    Convive con voleii-court.js (window.VOLEII) y voleii-drills.js (window.VOLEII.Drills).
@@ -30,7 +32,7 @@
 
   var VO = root.VOLEII = root.VOLEII || {};
   var A = VO.Action = VO.Action || {};
-  A.version = '2.1.0';
+  A.version = '2.2.0';
 
   /* ======================= TEMA ======================= */
   var COL = {
@@ -254,6 +256,8 @@
   }
   /* profundidad de un punto frente a la cámara; lo que queda detrás (cámaras bajas o giradas) no se dibuja */
   var NEAR = 0.3;
+  /* se recorta un poco más adelante que NEAR: los puntos del corte quedan siempre delante (si no, el piso perdía una esquina y parpadeaba) */
+  var CLIP = 0.45;
   function depthOf(cam, x, y, z) { return (x - cam.eye.x) * cam.f.x + (y - cam.eye.y) * cam.f.y + ((z || 0) - cam.eye.z) * cam.f.z; }
   /* mezcla de dos cámaras (para pasar de una a otra sin brincos) */
   function lerpCam(a, b, u) {
@@ -335,23 +339,23 @@
   /* recorta contra el plano de enfrente de la cámara (polígono en metros [x, y, h]) */
   RP.clip = function (w) {
     var out = [], n = w.length, i, ds = [], all = true;
-    for (i = 0; i < n; i++) { ds.push(depthOf(this.cam, w[i][0], w[i][1], w[i][2])); if (ds[i] < NEAR) { all = false; } }
+    for (i = 0; i < n; i++) { ds.push(depthOf(this.cam, w[i][0], w[i][1], w[i][2])); if (ds[i] < CLIP) { all = false; } }
     if (all) { return w; }
     for (i = 0; i < n; i++) {
       var a = w[i], b = w[(i + 1) % n], da = ds[i], db = ds[(i + 1) % n];
       var A3 = [a[0], a[1], a[2] || 0], B3 = [b[0], b[1], b[2] || 0];
-      if (da >= NEAR) { out.push(A3); }
-      if ((da >= NEAR) !== (db >= NEAR)) { out.push(vmix(A3, B3, (NEAR - da) / (db - da))); }
+      if (da >= CLIP) { out.push(A3); }
+      if ((da >= CLIP) !== (db >= CLIP)) { out.push(vmix(A3, B3, (CLIP - da) / (db - da))); }
     }
     return out;
   };
   /* añade un segmento recortado al camino actual (para dibujar muchas líneas de una vez) */
   RP.segTo = function (a, b) {
     var da = depthOf(this.cam, a[0], a[1], a[2]), db = depthOf(this.cam, b[0], b[1], b[2]);
-    if (da < NEAR && db < NEAR) { return; }
+    if (da < CLIP && db < CLIP) { return; }
     var A3 = [a[0], a[1], a[2] || 0], B3 = [b[0], b[1], b[2] || 0];
-    if (da < NEAR) { A3 = vmix(A3, B3, (NEAR - da) / (db - da)); }
-    else if (db < NEAR) { B3 = vmix(A3, B3, (NEAR - da) / (db - da)); }
+    if (da < CLIP) { A3 = vmix(A3, B3, (CLIP - da) / (db - da)); }
+    else if (db < CLIP) { B3 = vmix(A3, B3, (CLIP - da) / (db - da)); }
     var p = this.P(A3[0], A3[1], A3[2]), q = this.P(B3[0], B3[1], B3[2]);
     this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(q.x, q.y);
   };
@@ -453,18 +457,36 @@
 
   /* ---------- cancha ---------- */
   /* juntas del piso: losetas cuadradas o tablas de madera; se apagan cuando quedan muy pequeñas en pantalla */
+  /* Cada junta se dibuja por tramos de 1,5 m: a lo lejos, donde las juntas quedan muy juntas en pantalla, se apagan
+     (si no, titilan cuando la cámara se mueve). Los tramos se agrupan en 4 niveles de transparencia. */
   RP.drawSeams = function (S, x0, x1, y0, y1) {
     var step = S.tile || S.plank;
     if (!step || !S.seam) { return; }
-    var px = this.ppm(clamp(4.5, x0, x1), clamp(4.5, y0, y1), 0) * step;
-    var al = clamp((px - 2.5) / 5, 0, 1);
-    if (al <= 0.02) { return; }
-    var c = this.ctx, x, y;
-    c.save(); c.globalAlpha = al; c.beginPath();
-    for (x = Math.ceil(x0 / step) * step; x <= x1; x += step) { this.segTo([x, y0, 0], [x, y1, 0]); }
-    if (S.tile) { for (y = Math.ceil(y0 / step) * step; y <= y1; y += step) { this.segTo([x0, y, 0], [x1, y, 0]); } }
-    c.strokeStyle = S.seam; c.lineWidth = 1; c.stroke();
-    c.restore();
+    var self = this, c = this.ctx, groups = [[], [], [], []], CH = 1.5, x, y, e, g, i;
+    function gap(a, b) {
+      var p = self.P(a[0], a[1], 0), q = self.P(b[0], b[1], 0);
+      return isFinite(p.x) && isFinite(q.x) ? Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y)) : 0;
+    }
+    function put(a, b, px) {
+      var al = clamp((px - 3) / 5, 0, 1);
+      if (al < 0.2) { return; }
+      groups[Math.min(3, Math.floor(al * 4))].push([a, b]);
+    }
+    for (x = Math.ceil(x0 / step) * step; x <= x1; x += step) {
+      for (y = y0; y < y1 - 1e-6; y += CH) { e = Math.min(y1, y + CH); put([x, y, 0], [x, e, 0], gap([x, (y + e) / 2], [x + step, (y + e) / 2])); }
+    }
+    if (S.tile) {
+      for (y = Math.ceil(y0 / step) * step; y <= y1; y += step) {
+        for (x = x0; x < x1 - 1e-6; x += CH) { e = Math.min(x1, x + CH); put([x, y, 0], [e, y, 0], gap([(x + e) / 2, y], [(x + e) / 2, y + step])); }
+      }
+    }
+    for (g = 0; g < 4; g++) {
+      if (!groups[g].length) { continue; }
+      c.save(); c.globalAlpha = (g + 1) / 4; c.beginPath();
+      for (i = 0; i < groups[g].length; i++) { this.segTo(groups[g][i][0], groups[g][i][1]); }
+      c.strokeStyle = S.seam; c.lineWidth = 1; c.stroke();
+      c.restore();
+    }
   };
   RP.drawFloor = function (sc) {
     var R = sc.view, c = this.ctx, S = surface();
@@ -872,6 +894,99 @@
         else if (prevSeg && prevSeg.type === 'hold' && prevSeg.who === who) { (this.releases[who] = this.releases[who] || []).push({ t: sg.t0, to: sg.b, h: sg.ah, side: prevSeg.side }); }
       }
     }
+    this.prepSteps();
+  };
+  /* pisadas: las huellas de la escena (overlays 'foot': dónde y cuándo pisa cada pie; side 1 = derecho, -1 = izquierdo)
+     son donde pisan los pies del jugador que está ahí en ese momento. Así la carrera de ataque sale derecho, izquierdo,
+     derecho, izquierdo (cerrando con el izquierdo al frente) igual que las huellas y la vista lateral. */
+  DP.prepSteps = function () {
+    var sc = this.sc, ids = Object.keys(sc.actors), ovs = sc.overlays || [], byId = {}, i, j;
+    this.pisadas = {};
+    for (i = 0; i < ovs.length; i++) {
+      var o = ovs[i];
+      if (o.type !== 'foot' || !o.at || o.t0 == null) { continue; }
+      var best = null, bd = 0.9;
+      for (j = 0; j < ids.length; j++) {
+        var ac = sc.actors[ids[j]];
+        if (ac.role === 'coach' || !ac.track) { continue; }
+        var dd = len2(sub(samplePos(ac.track, o.t0), o.at));
+        if (dd < bd) { bd = dd; best = ids[j]; }
+      }
+      if (best) { (byId[best] = byId[best] || []).push({ t: o.t0, at: o.at, side: o.side < 0 ? -1 : 1 }); }
+    }
+    var self = this;
+    Object.keys(byId).forEach(function (id) {
+      var list = byId[id].sort(function (m, n) { return m.t - n.t; }), runs = [], cur = null, a = sc.actors[id];
+      list.forEach(function (s) {
+        if (!cur || s.t - cur.t1 > 1.2) { cur = { L: [], R: [], t0: s.t, t1: s.t, apex: null }; runs.push(cur); }
+        (s.side < 0 ? cur.L : cur.R).push(s); cur.t1 = s.t;
+      });
+      runs.forEach(function (rn) {
+        var J = a.jump || [], k;
+        for (k = 0; k < J.length; k++) { if (J[k][0] >= rn.t1 - 0.15 && J[k][0] <= rn.t1 + 0.8) { rn.apex = (J[k][0] + J[k][1]) / 2; break; } }
+      });
+      self.pisadas[id] = runs;
+    });
+  };
+  /* dónde está un pie en t según sus pisadas: plantado en la última, o en el aire hacia la siguiente
+     (sale cuando pisa el otro pie). null = antes de la carrera (se usa el paso normal) */
+  /* cuándo sale un pie hacia su pisada next: cuando pisa el otro pie (o 0,3 s antes si es el primer paso) */
+  function swingStart(list, other, next, prev) {
+    var lo = prev ? prev.t : -1e9, s0 = prev ? prev.t + 0.05 : next.t - 0.3, i;
+    for (i = 0; i < other.length; i++) { if (other[i].t > lo && other[i].t < next.t - 0.02) { s0 = Math.max(prev ? prev.t + 0.05 : -1e9, other[i].t); } }
+    if (!prev) { s0 = Math.max(s0, next.t - 0.45); }
+    return Math.min(s0, next.t - 0.1);
+  }
+  /* start: dónde está parado ese pie antes de la carrera (si la carrera sale desde ahí); si no, el paso normal */
+  function footOn(list, other, t, dflt, k, start) {
+    var prev = null, next = null, i;
+    for (i = 0; i < list.length; i++) { if (list[i].t <= t) { prev = list[i]; } else { next = list[i]; break; } }
+    if (next) {
+      var s0 = swingStart(list, other, next, prev);
+      if (t >= s0) {
+        var u = clamp((t - s0) / (next.t - s0), 0, 1), from = prev ? [prev.at[0], prev.at[1], 0] : (start || dflt);
+        var pos = vmix(from, [next.at[0], next.at[1], 0], ease(u));
+        pos[2] = Math.sin(Math.PI * u) * 0.11 * k + (prev || start ? 0 : (dflt[2] || 0) * (1 - u));
+        return pos;
+      }
+    }
+    if (prev) { return [prev.at[0], prev.at[1], 0]; }
+    return start ? [start[0], start[1], 0] : null;
+  }
+  /* dónde está parado cada pie antes de arrancar: solo si el cuerpo apenas se movió hasta que ese pie sale (si no, paso normal) */
+  DP.stepStarts = function (id, rn, k) {
+    var ts = rn.t0 - 0.35, p = this.actorPos(id, ts), r = dirOf(this.faceAngle(id, ts, p) + 90), sp = 0.13 * k, self = this;
+    function one(list, other, side) {
+      if (!list.length) { return null; }
+      var s0 = swingStart(list, other, list[0], null);
+      if (len2(sub(self.actorPos(id, s0), p)) > 1.0) { return null; }
+      return [p[0] + r[0] * sp * side, p[1] + r[1] * sp * side, 0];
+    }
+    rn.sL = one(rn.L, rn.R, -1); rn.sR = one(rn.R, rn.L, 1);
+  };
+  /* pies de la carrera; al despegar se van recogiendo como en el salto; sin salto, se sueltan cuando el jugador se mueve */
+  DP.stepFeet = function (id, t, z, dL, dR, k) {
+    var runs = this.pisadas && this.pisadas[id], i;
+    if (!runs) { return null; }
+    for (i = 0; i < runs.length; i++) {
+      var rn = runs[i];
+      if (t < rn.t0 - 0.6 || (rn.apex != null && t > rn.apex)) { continue; }
+      if (rn.sL === undefined) { this.stepStarts(id, rn, k); }
+      var L = footOn(rn.L, rn.R, t, dL, k, rn.sL), R = footOn(rn.R, rn.L, t, dR, k, rn.sR);
+      if (!L && !R) { continue; }
+      L = L || dL; R = R || dR;
+      if (t > rn.t1) {
+        if (rn.apex != null) {
+          if (z > 0.005) { var tk = clamp(z / 0.25, 0, 1); L = vmix(L, dL, tk); R = vmix(R, dR, tk); }
+        } else {
+          var dd = len2(sub(this.actorPos(id, t), this.actorPos(id, rn.t1))), w = 1 - clamp((dd - 0.15) / 0.45, 0, 1);
+          if (w <= 0) { continue; }
+          L = vmix(dL, L, w); R = vmix(dR, R, w);
+        }
+      }
+      return { L: L, R: R };
+    }
+    return null;
   };
 
   /* ¿se dibuja con la capa 3D real? */
@@ -1181,6 +1296,9 @@
       fR = [p[0] + r[0] * spread * 0.8, p[1] + r[1] * spread * 0.8, z + 0.02 + tuck * 0.12 * k];
       fL = vadd(fL, vsc(f, -0.08 * k)); fR = vadd(fR, vsc(f, -0.08 * k));
     }
+    /* en la carrera de ataque los pies van sobre sus huellas */
+    var sf = this.stepFeet(id, t, z, fL, fR, k);
+    if (sf) { fL = sf.L; fR = sf.R; }
     var ankL = vadd(fL, [0, 0, BODY.ankle * k]), ankR = vadd(fR, [0, 0, BODY.ankle * k]);
     var legL = ik2(hipL, ankL, BODY.thigh * k, BODY.shin * k, f), legR = ik2(hipR, ankR, BODY.thigh * k, BODY.shin * k, f);
     /* manos */

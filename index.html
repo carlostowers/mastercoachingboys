@@ -311,9 +311,14 @@ body[data-ses="2"] .s1-only{display:none !important}
 @media (min-width:820px){.ses a{font-size:28px}}
 .tl .mv{background:#C6A11F;color:var(--navy)}
 
-/* ---------- Piso de la cancha (Sesión 2, vista 3D y desde arriba) ---------- */
-.floorctl{flex-wrap:wrap}
-@media (max-width:600px){ .floorctl .lbl{display:inline} .floorctl .seg button{font-size:14px;padding:6px 10px} }
+/* ---------- Piso de la cancha (Sesión 2): en la barra fija, al lado de la categoría; en celular, en una segunda línea ---------- */
+.bar .rgt{display:flex;align-items:center;gap:8px 18px}
+.bar .bar2{display:none}
+@media (max-width:600px){
+  .bar .floorTop{display:none}
+  .bar .bar2{display:flex;padding-top:0;padding-bottom:8px}
+  .bar .bar2 .lbl{display:inline}
+}
 </style>
 </head>
 <body data-view="coach" data-age="9-10" data-ses="2">
@@ -341,15 +346,19 @@ body[data-ses="2"] .s1-only{display:none !important}
         <button type="button" data-v="players" aria-pressed="false">Jugadores<span class="long"> y padres</span></button>
       </div>
     </div>
-    <div class="ctl">
-      <span class="lbl">Categoría</span>
-      <div class="seg" id="segAge" role="group" aria-label="Categoría">
-        <button type="button" data-a="7-8" aria-pressed="false">7–8U</button>
-        <button type="button" data-a="9-10" aria-pressed="true">9–10U</button>
-        <button type="button" data-a="11-12" aria-pressed="false">11–12U</button>
+    <div class="rgt">
+      <div class="ctl">
+        <span class="lbl">Categoría</span>
+        <div class="seg" id="segAge" role="group" aria-label="Categoría">
+          <button type="button" data-a="7-8" aria-pressed="false">7–8U</button>
+          <button type="button" data-a="9-10" aria-pressed="true">9–10U</button>
+          <button type="button" data-a="11-12" aria-pressed="false">11–12U</button>
+        </div>
       </div>
+      <div class="ctl s2-only floorTop"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="sintetico" aria-pressed="true">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
   </div>
+  <div class="wrap bar2 s2-only"><div class="ctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="sintetico" aria-pressed="true">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div></div>
 </div>
 <main class="wrap">
   <div class="ses" role="group" aria-label="Sesión"><a href="#horario" data-s="1">Sesión 1<small>Domingo 11 oct · Fundamentos</small></a><a href="#s2-horario" data-s="2">Sesión 2<small>Domingo 25 oct · Progresión</small></a></div>
@@ -1055,7 +1064,6 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Saque → Recibo</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:08 · Turno 2 10:38</div>
       </div>
-      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1159,7 +1167,6 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Recibo → Colocación</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:27 · Turno 2 10:57</div>
       </div>
-      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1263,7 +1270,6 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Colocación → Ataque</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:46 · Turno 2 11:16</div>
       </div>
-      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1390,7 +1396,6 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Mini-voleibol</h2>
         <div class="st-sub">20 minutos de juego · Turno 1 10:05 · Turno 2 11:35 · Cada cancha dividida a lo largo en 2 mini-canchas</div>
       </div>
-      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1405,7 +1410,7 @@ body[data-ses="2"] .s1-only{display:none !important}
     <div class="grid2">
       <div class="card coach-only">
         <h3>Lenguaje común · <span class="g">Mini-voleibol</span></h3>
-        <ol class="keys"><li><span class="n">1</span><span><b>¡Mía!</b> El que va por el balón lo pide en voz alta.</span></li><li><span class="n">2</span><span><b>Tres toques:</b> recibo, colocación y al otro lado. En 7–8U son <b>dos toques</b>: primer toque y segundo atrapado al otro lado.</span></li><li><span class="n">3</span><span><b>Uno, dos, tres</b> (en 7–8U, <b>uno, dos</b>): los toques se cuentan en voz alta.</span></li><li><span class="n">4</span><span><b>Cada jugada empieza con saque.</b> En 7–8U, el MV1 empieza con un lanzamiento por abajo con dos manos.</span></li><li><span class="n">5</span><span><b>El juego enseña al juego:</b> el coach corrige poco y anima mucho.</span></li></ol>
+        <ol class="keys"><li><span class="n">1</span><span><b>¡Yo!</b> El que va por el balón lo pide en voz alta.</span></li><li><span class="n">2</span><span><b>Tres toques:</b> recibo, colocación y al otro lado. En 7–8U son <b>dos toques</b>: primer toque y segundo atrapado al otro lado.</span></li><li><span class="n">3</span><span><b>Uno, dos, tres</b> (en 7–8U, <b>uno, dos</b>): los toques se cuentan en voz alta.</span></li><li><span class="n">4</span><span><b>Cada jugada empieza con saque.</b> En 7–8U, el MV1 empieza con un lanzamiento por abajo con dos manos.</span></li><li><span class="n">5</span><span><b>El juego enseña al juego:</b> el coach corrige poco y anima mucho.</span></li></ol>
         <div class="src">Fuente: Plan de Trabajo Técnico MOVE 2026–2027, Rol del entrenador: juegos 2 vs 2, 3 vs 3 y 4 vs 4 con puntos y objetivos progresivos.</div>
       </div>
       <div class="card coach-only">
@@ -1414,7 +1419,7 @@ body[data-ses="2"] .s1-only{display:none !important}
       </div>
       <div class="card player-only">
         <h3>Lo que vamos a <span class="g">buscar</span></h3>
-        <ol class="keys"><li><span class="n">1</span><span>Pedir el balón: ¡mía!</span></li><li><span class="n">2</span><span><span data-agev="7-8">Dos toques antes de pasar.</span><span data-agev="9-10 11-12">Tres toques antes de pasar.</span></span></li><li><span class="n">3</span><span>Contar los toques en voz alta.</span></li><li><span class="n">4</span><span>Sacar adentro.</span></li></ol>
+        <ol class="keys"><li><span class="n">1</span><span>Pedir el balón: ¡yo!</span></li><li><span class="n">2</span><span><span data-agev="7-8">Dos toques antes de pasar.</span><span data-agev="9-10 11-12">Tres toques antes de pasar.</span></span></li><li><span class="n">3</span><span>Contar los toques en voz alta.</span></li><li><span class="n">4</span><span>Sacar adentro.</span></li></ol>
       </div>
     </div>
     <div class="card coach-only role mt"><h3>Rol del coach en <span class="g">la cancha</span></h3><ol class="keys two"><li><span class="n">1</span><span><b>Educador antes que coach:</b> modelar respeto, honestidad y perseverancia.</span></li><li><span class="n">2</span><span><b>Feedback positivo o constructivo</b> en cada repetición: la corrección constante llega al jugador por lo que ve y lo que oye.</span></li><li><span class="n">3</span><span><b>Demostrar antes de empezar:</b> el jugador aprende viendo, escuchando y copiando el modelo.</span></li><li><span class="n">4</span><span><b>Dejar que los atletas inicien</b> los drills.</span></li><li><span class="n">5</span><span><b>Visión y lectura:</b> es la destreza más importante del juego. Pedir que miren el balón y al compañero.</span></li><li><span class="n">6</span><span><b>Aceptar el error:</b> para aprender hay que mostrar un error nuevo, no el mismo. No se juzga a nadie por equivocarse.</span></li></ol><div class="src">Fuente: Plan de Trabajo Técnico MOVE 2026–2027, Rol del entrenador.</div></div>
@@ -1433,8 +1438,8 @@ body[data-ses="2"] .s1-only{display:none !important}
         </div>
         <div class="info">
           <p class="org player-only"><b>Qué haces:</b> los dos lados juegan juntos. Cuentan cuántos balones seguidos pasan la malla con 2 o 3 toques. Cuando el balón cae, entra uno de la fila y empiezan a contar otra vez.</p>
-          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b><span data-agev="7-8">Lanza</span><span data-agev="9-10 11-12">Saca</span></b><p><span data-agev="7-8">Cada jugada empieza con un lanzamiento por abajo con dos manos, alto y suave, para que el otro lado pueda recibir.</span><span data-agev="9-10 11-12">Cada jugada empieza con saque, para que el otro lado pueda recibir.</span></p></div></li><li data-step="1"><span class="n">2</span><div><b>¡Mía!</b><p>El que va por el balón lo pide en voz alta y hace el primer toque. Su equipo lo pasa con 2 o 3 toques.<span data-agev="7-8"> Se vale atrapar el segundo toque.</span></p></div></li><li data-step="2"><span class="n">3</span><div><b>Del otro lado, igual</b><p>El otro lado recibe y lo devuelve con 2 o 3 toques.</p></div></li><li data-step="3"><span class="n">4</span><div><b>Cuenta y sigue</b><p>Cada balón que pasa la malla suma. Meta: <span data-agev="7-8">5 seguidos.</span><span data-agev="9-10">8 seguidos.</span><span data-agev="11-12">10 seguidos.</span></p></div></li></ol>
-          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">¡Mía!</div></div></div>
+          <ol class="steps"><li data-step="0"><span class="n">1</span><div><b><span data-agev="7-8">Lanza</span><span data-agev="9-10 11-12">Saca</span></b><p><span data-agev="7-8">Cada jugada empieza con un lanzamiento por abajo con dos manos, alto y suave, para que el otro lado pueda recibir.</span><span data-agev="9-10 11-12">Cada jugada empieza con saque, para que el otro lado pueda recibir.</span></p></div></li><li data-step="1"><span class="n">2</span><div><b>¡Yo!</b><p>El que va por el balón lo pide en voz alta y hace el primer toque. Su equipo lo pasa con 2 o 3 toques.<span data-agev="7-8"> Se vale atrapar el segundo toque.</span></p></div></li><li data-step="2"><span class="n">3</span><div><b>Del otro lado, igual</b><p>El otro lado recibe y lo devuelve con 2 o 3 toques.</p></div></li><li data-step="3"><span class="n">4</span><div><b>Cuenta y sigue</b><p>Cada balón que pasa la malla suma. Meta: <span data-agev="7-8">5 seguidos.</span><span data-agev="9-10">8 seguidos.</span><span data-agev="11-12">10 seguidos.</span></p></div></li></ol>
+          <div class="cue"><div><div class="k">Palabra clave</div><div class="w">¡Yo!</div></div></div>
           <div class="box coach-only"><h5>Corrige</h5><ul><li>Nadie pide el balón y se queda entre dos.</li><li>Pasan el balón al otro lado en el primer toque.</li><li><span data-agev="7-8">Lanzan bajo o rápido: en el cooperativo, el lanzamiento es para que el otro lado pueda recibir.</span><span data-agev="9-10 11-12">Sacan fuerte: en el cooperativo, el saque es para que el otro lado pueda recibir.</span></li></ul></div>
           <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>2 vs 2. Se vale atrapar el segundo toque y lanzarlo o volearlo al otro lado. Fondo acortado con conos. La jugada empieza con un lanzamiento por abajo con dos manos; el saque por abajo entra en MV2 y MV3. Meta: 5 seguidos.</span></div><div data-age="9-10"><b>9–10U</b><span>Empiezan 2 vs 2 y pasan a 3 vs 3, sin atrapar. Saque desde 20 pies. Meta: 8 seguidos.</span></div><div data-age="11-12"><b>11–12U</b><span>Empiezan 3 vs 3 y pasan a 4 vs 4 en la cancha completa. Saque por arriba. Meta: 10 seguidos.</span></div></div></div>
         </div>
@@ -1477,7 +1482,7 @@ body[data-ses="2"] .s1-only{display:none !important}
           <p class="org player-only"><b>Qué haces:</b> el punto solo cuenta si tu equipo usó <span data-agev="7-8">2 toques</span><span data-agev="9-10 11-12">3 toques</span>. Cuéntenlos en voz alta: <span data-agev="7-8">uno, dos.</span><span data-agev="9-10 11-12">uno, dos, tres.</span></p>
           <ol class="steps"><li data-step="0"><span class="n">1</span><div><b>Saca</b><p>Cada jugada empieza con saque.</p></div></li><li data-step="1"><span class="n">2</span><div><b>Con los toques: vale</b><p><span data-agev="7-8">Primer toque, segundo toque atrapado y al otro lado: el punto cuenta.</span><span data-agev="9-10 11-12">Recibo, colocación y al otro lado: el punto cuenta.</span></p></div></li><li data-step="2"><span class="n">3</span><div><b>Con menos toques</b><p>El balón pasa al otro lado antes de tiempo.</p></div></li><li data-step="3"><span class="n">4</span><div><b>No cuenta</b><p>Ese punto no se cuenta. Se rota y se saca otra vez.</p></div></li></ol>
           <div class="cue"><div><div class="k">Palabra clave</div><div class="w"><span data-agev="7-8">Uno, dos</span><span data-agev="9-10 11-12">Uno, dos, tres</span></div></div></div>
-          <div class="box coach-only"><h5>Corrige</h5><ul><li>Cuentan en silencio: contar en voz alta organiza al equipo.</li><li><span data-agev="7-8">El balón atrapado se tira bajo y a la malla: se lanza alto al otro lado.</span><span data-agev="9-10 11-12">El tercer toque sale bajo y a la malla: se juega alto al otro lado.</span></li><li>Se olvidan de pedir el balón: ¡mía!</li></ul></div>
+          <div class="box coach-only"><h5>Corrige</h5><ul><li>Cuentan en silencio: contar en voz alta organiza al equipo.</li><li><span data-agev="7-8">El balón atrapado se tira bajo y a la malla: se lanza alto al otro lado.</span><span data-agev="9-10 11-12">El tercer toque sale bajo y a la malla: se juega alto al otro lado.</span></li><li>Se olvidan de pedir el balón: ¡yo!</li></ul></div>
           <div class="box coach-only"><h5>Por categoría</h5><div class="ages"><div data-age="7-8"><b>7–8U</b><span>2 vs 2. Se vale atrapar el segundo toque y lanzarlo o volearlo al otro lado. Fondo acortado con conos y saque por abajo desde 10–15 pies. Cuenta con 2 toques.</span></div><div data-age="9-10"><b>9–10U</b><span>Empiezan 2 vs 2 y pasan a 3 vs 3, sin atrapar. Saque desde 20 pies. Cuenta con 3 toques.</span></div><div data-age="11-12"><b>11–12U</b><span>Empiezan 3 vs 3 y pasan a 4 vs 4 en la cancha completa. Saque por arriba. Cuenta con 3 toques.</span></div></div></div>
         </div>
       </div>
@@ -1528,11 +1533,11 @@ body[data-ses="2"] .s1-only{display:none !important}
     D.setAge(a);
     if (AC) { AC.setAge(a); }
   }
-  /* piso de todas las canchas de la Sesión 2: losetas (Complejo Collazo), sintético o madera; se recuerda en este navegador */
+  /* piso de todas las canchas de la Sesión 2: sintético o madera (las losetas quedan en el motor para más adelante); se recuerda en este navegador */
   var FLOOR_KEY = 'mcb.piso';
   function readFloor() {
-    try { var f = window.localStorage.getItem(FLOOR_KEY); if (f === 'losetas' || f === 'sintetico' || f === 'madera') { return f; } } catch (e) { /* sin acción */ }
-    return 'losetas';
+    try { var f = window.localStorage.getItem(FLOOR_KEY); if (f === 'sintetico' || f === 'madera') { return f; } } catch (e) { /* sin acción */ }
+    return 'sintetico';
   }
   function setFloor(f, save) {
     state.floor = f;
@@ -1563,7 +1568,7 @@ body[data-ses="2"] .s1-only{display:none !important}
     }
     if (scroll) {
       var nav = document.querySelector('.ses');
-      if (nav) { var y = nav.getBoundingClientRect().top + window.pageYOffset - 70; if (window.pageYOffset > y) { window.scrollTo(0, Math.max(0, y)); } }
+      if (nav) { var bar = document.querySelector('.bar'), y = nav.getBoundingClientRect().top + window.pageYOffset - ((bar ? bar.offsetHeight : 56) + 14); if (window.pageYOffset > y) { window.scrollTo(0, Math.max(0, y)); } }
     }
   }
 

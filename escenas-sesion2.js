@@ -469,7 +469,7 @@
     function isTop(id) { return id.charAt(0) === 'A'; }
     function touchText(id, pos, t, n) {
       if (mode === 'coop') {
-        if (n === 1) { ov.push({ type: 'text', t0: t - 0.35, t1: t + 0.6, at: [pos[0], pos[1] + (isTop(id) ? -1.15 : 1.15)], text: '¡Mía!', tone: 'gold' }); }
+        if (n === 1) { ov.push({ type: 'text', t0: t - 0.35, t1: t + 0.6, at: [pos[0], pos[1] + (isTop(id) ? -1.15 : 1.15)], text: '¡Yo!', tone: 'gold' }); }
       } else {
         ov.push({ type: 'text', t0: t - 0.1, t1: t + 0.75, at: [pos[0] + 0.95, pos[1]], text: String(n), tone: 'white' });
       }
@@ -538,7 +538,7 @@
       ov.push({ type: 'text', t0: (prevT + landT) / 2, t1: (prevT + landT) / 2 + 1.2, at: [xc + 4.5, NY + 2.6], text: 'Pasó ' + crossings, tone: 'gold' });
       plats[rid].push({ t0: landT - 0.45, t1: landT + 0.3, toPoint: P[two ? 'Bs' : 'Bs'] });
       his[rid].push([landT - 0.7, landT + 0.4]);
-      ov.push({ type: 'text', t0: landT - 0.35, t1: landT + 0.6, at: [rpos[0], rpos[1] + 1.15], text: '¡Mía!', tone: 'gold' });
+      ov.push({ type: 'text', t0: landT - 0.35, t1: landT + 0.6, at: [rpos[0], rpos[1] + 1.15], text: '¡Yo!', tone: 'gold' });
       b.push(ballHold(null, landT, landT + 0.6, { h: 0.75, at: rcp, fout: 0.5 }));
       tEnd = landT + 0.6;
       ov.push({ type: 'text', t0: landT, t1: landT + 1.6, at: [xc + 4.5, NY + 7.6], text: '¡Y sigue la cuenta!', tone: 'white' });
