@@ -17,6 +17,10 @@
      h = altura (0 = piso)
    Ángulos de frente en grados (como voleii-drills): 0 = mirando a la malla (y negativa), 90 = hacia x positiva.
 
+   Vista 3D (2.1): cámaras Normal, Receptor, Lateral y Sigue la jugada; con el dedo gira 360°, sube o baja
+   la cámara y acerca (pellizco); doble toque vuelve. Velocidad 1x, 0.5x y 0.25x.
+   Pisos: A.setFloor('losetas' | 'sintetico' | 'madera') o mount({ floor }).
+
    Sin dependencias, sin build. Expone window.VOLEII.Action.
    Convive con voleii-court.js (window.VOLEII) y voleii-drills.js (window.VOLEII.Drills).
    Ver docs/guia.md y docs/referencia.md.
@@ -26,7 +30,7 @@
 
   var VO = root.VOLEII = root.VOLEII || {};
   var A = VO.Action = VO.Action || {};
-  A.version = '2.0.0';
+  A.version = '2.1.0';
 
   /* ======================= TEMA ======================= */
   var COL = {
@@ -44,6 +48,30 @@
   var FONT = "'Barlow Condensed','Arial Narrow',Arial,sans-serif";
   var FONT_BIG = "Anton,Impact,'Arial Narrow',sans-serif";
   A.COL = COL;
+  /* ======================= PISOS ======================= */
+  /* sintetico: el azul de siempre. losetas: las losetas cuadradas azules (como el Complejo Collazo). madera: piso de gimnasio.
+     A.setFloor('losetas' | 'sintetico' | 'madera') cambia todas las canchas. */
+  var FLOORS = {
+    sintetico: { name: 'Sintético' },
+    losetas: {
+      name: 'Losetas', floor: '#1E4EA4', court: '#2862C2', courtRival: '#2459B4', front: 'rgba(255,255,255,0.035)',
+      line: 'rgba(248,250,253,0.96)', lineSoft: 'rgba(236,241,248,0.22)', numbers: 'rgba(255,255,255,0.12)',
+      tile: 0.305, seam: 'rgba(8,22,58,0.30)'
+    },
+    madera: {
+      name: 'Madera', floor: '#6A4426', court: '#C69862', courtRival: '#BC8D57', front: 'rgba(140,82,30,0.07)',
+      line: 'rgba(255,255,255,0.98)', lineSoft: 'rgba(92,54,22,0.30)', numbers: 'rgba(96,56,20,0.16)',
+      plank: 0.115, seam: 'rgba(96,58,24,0.20)'
+    }
+  };
+  function surface() {
+    var F = FLOORS[A.state && A.state.floor] || FLOORS.sintetico;
+    return {
+      floor: F.floor || COL.floor, court: F.court || COL.court, courtRival: F.courtRival || COL.courtRival, front: F.front || COL.front,
+      line: F.line || COL.line, lineSoft: F.lineSoft || COL.lineSoft, numbers: F.numbers || null, tile: F.tile || 0, plank: F.plank || 0, seam: F.seam || null
+    };
+  }
+  A.FLOORS = FLOORS;
   A.setTheme = function (o) {
     try {
       var k;
@@ -189,17 +217,25 @@
   A.ballHold = ballHold; A.ballFly = ballFly; A.ballHide = ballHide; A.flyAt = flyAt;
   A.approach = approach; A.attackRep = attackRep;
   A.scenes = A.scenes || {};
-  A.state = { age: '9-10', view: 1 };
+  A.state = { age: '9-10', view: 1, floor: 'sintetico' };
 
   /* ======================= CÁMARA ======================= */
-  /* e: 0 = desde arriba, 1 = 3D. R: región a encuadrar {x0, x1, y0, y1}. o: { el, az } */
-  function camera(e, R, o) {
+  /* e: 0 = desde arriba, 1 = 3D. R: región a encuadrar {x0, x1, y0, y1}. o: { el, az, dist }
+     Una cámara se describe con parámetros: a dónde mira (tx, ty, tz), distancia, inclinación (el) y giro (az) en grados.
+     Con el encuadre (s, ox, oy) esos mismos parámetros sirven para girar, acercar y seguir la jugada. */
+  function camBase(e, R, o) {
     o = o || {};
-    var el = rad(lerp(89.4, o.el || 50, e));
     var cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2, size = Math.max(R.x1 - R.x0, R.y1 - R.y0);
-    var dist = Math.exp(lerp(Math.log(200), Math.log((size * 1.25 + 6) * (o.dist || 1)), e));
-    var az = rad((o.az || 0) * e);
-    var tg = { x: cx, y: cy + lerp(0, size * 0.05, e), z: lerp(0, 0.4, e) };
+    return {
+      tx: cx, ty: cy + lerp(0, size * 0.05, e), tz: lerp(0, 0.4, e),
+      dist: Math.exp(lerp(Math.log(200), Math.log((size * 1.25 + 6) * (o.dist || 1)), e)),
+      el: lerp(89.4, o.el || 50, e), az: (o.az || 0) * e
+    };
+  }
+  function camera(e, R, o) { return camOf(camBase(e, R, o)); }
+  function camOf(p) {
+    var el = rad(p.el), az = rad(p.az), dist = p.dist;
+    var tg = { x: p.tx, y: p.ty, z: p.tz };
     var eye = { x: tg.x + dist * Math.sin(az) * Math.cos(el), y: tg.y + dist * Math.cos(az) * Math.cos(el), z: tg.z + dist * Math.sin(el) };
     var f = { x: tg.x - eye.x, y: tg.y - eye.y, z: tg.z - eye.z };
     var fl = Math.sqrt(f.x * f.x + f.y * f.y + f.z * f.z);
@@ -216,6 +252,20 @@
     if (zc < 0.05) { zc = 0.05; }
     return { x: (dx * cam.r.x + dy * cam.r.y + dz * cam.r.z) / zc, y: -(dx * cam.u.x + dy * cam.u.y + dz * cam.u.z) / zc, d: zc };
   }
+  /* profundidad de un punto frente a la cámara; lo que queda detrás (cámaras bajas o giradas) no se dibuja */
+  var NEAR = 0.3;
+  function depthOf(cam, x, y, z) { return (x - cam.eye.x) * cam.f.x + (y - cam.eye.y) * cam.f.y + ((z || 0) - cam.eye.z) * cam.f.z; }
+  /* mezcla de dos cámaras (para pasar de una a otra sin brincos) */
+  function lerpCam(a, b, u) {
+    return {
+      tx: lerp(a.tx, b.tx, u), ty: lerp(a.ty, b.ty, u), tz: lerp(a.tz, b.tz, u),
+      dist: Math.exp(lerp(Math.log(a.dist), Math.log(b.dist), u)),
+      el: lerp(a.el, b.el, u), az: lerpAngle(a.az, b.az, u),
+      s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), u)), ox: lerp(a.ox, b.ox, u), oy: lerp(a.oy, b.oy, u)
+    };
+  }
+  function copyCam(p) { return { tx: p.tx, ty: p.ty, tz: p.tz, dist: p.dist, el: p.el, az: p.az, s: p.s, ox: p.ox, oy: p.oy }; }
+  function withFit(p, f) { p.s = f.s; p.ox = f.ox; p.oy = f.oy; return p; }
   function boundsPts(R, e, netH) {
     var pts = [[R.x0, R.y0, 0], [R.x1, R.y0, 0], [R.x1, R.y1, 0], [R.x0, R.y1, 0]];
     if (e > 0.01) {
@@ -274,9 +324,36 @@
     /* transición suave: en los extremos se usa el encuadre exacto */
     this.fit = this.e <= 0.001 ? fa : (this.e >= 0.999 ? fb : fc);
   };
+  /* cámara dada por parámetros (girar, acercar, seguir la jugada) */
+  RP.useCam = function (p) { this.cam = camOf(p); this.fit = { s: p.s, ox: p.ox, oy: p.oy }; };
+  /* un punto detrás de la cámara sale como NaN: el canvas no lo dibuja */
   RP.P = function (x, y, z) {
     var q = rawP(this.cam, x, y, z || 0);
+    if (depthOf(this.cam, x, y, z) < NEAR) { return { x: NaN, y: NaN, d: q.d }; }
     return { x: this.fit.ox + q.x * this.fit.s, y: this.fit.oy + q.y * this.fit.s, d: q.d };
+  };
+  /* recorta contra el plano de enfrente de la cámara (polígono en metros [x, y, h]) */
+  RP.clip = function (w) {
+    var out = [], n = w.length, i, ds = [], all = true;
+    for (i = 0; i < n; i++) { ds.push(depthOf(this.cam, w[i][0], w[i][1], w[i][2])); if (ds[i] < NEAR) { all = false; } }
+    if (all) { return w; }
+    for (i = 0; i < n; i++) {
+      var a = w[i], b = w[(i + 1) % n], da = ds[i], db = ds[(i + 1) % n];
+      var A3 = [a[0], a[1], a[2] || 0], B3 = [b[0], b[1], b[2] || 0];
+      if (da >= NEAR) { out.push(A3); }
+      if ((da >= NEAR) !== (db >= NEAR)) { out.push(vmix(A3, B3, (NEAR - da) / (db - da))); }
+    }
+    return out;
+  };
+  /* añade un segmento recortado al camino actual (para dibujar muchas líneas de una vez) */
+  RP.segTo = function (a, b) {
+    var da = depthOf(this.cam, a[0], a[1], a[2]), db = depthOf(this.cam, b[0], b[1], b[2]);
+    if (da < NEAR && db < NEAR) { return; }
+    var A3 = [a[0], a[1], a[2] || 0], B3 = [b[0], b[1], b[2] || 0];
+    if (da < NEAR) { A3 = vmix(A3, B3, (NEAR - da) / (db - da)); }
+    else if (db < NEAR) { B3 = vmix(A3, B3, (NEAR - da) / (db - da)); }
+    var p = this.P(A3[0], A3[1], A3[2]), q = this.P(B3[0], B3[1], B3[2]);
+    this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(q.x, q.y);
   };
   RP.ppm = function (x, y, z) {
     var a = this.P(x, y, z), b = this.P(x + 0.5, y, z), c = this.P(x, y + 0.5, z);
@@ -299,14 +376,16 @@
   };
   RP.poly = function (w, fill, stroke, lw) {
     var pts = [], i;
+    w = this.clip(w);
+    if (w.length < 3) { return; }
     for (i = 0; i < w.length; i++) { pts.push(this.P(w[i][0], w[i][1], w[i][2] || 0)); }
     this.path(pts); this.ctx.closePath();
     if (fill) { this.ctx.fillStyle = fill; this.ctx.fill(); }
     if (stroke) { this.ctx.strokeStyle = stroke; this.ctx.lineWidth = lw || 1; this.ctx.stroke(); }
   };
   RP.seg = function (a, b, color, lw, dash) {
-    var c = this.ctx, p = this.P(a[0], a[1], a[2] || 0), q = this.P(b[0], b[1], b[2] || 0);
-    c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(q.x, q.y);
+    var c = this.ctx;
+    c.beginPath(); this.segTo(a, b);
     c.strokeStyle = color; c.lineWidth = lw || 1; c.setLineDash(dash || []); c.stroke(); c.setLineDash([]);
   };
   RP.arrowHead = function (p, q, color, size) {
@@ -325,7 +404,7 @@
     var c = this.ctx, i, p, w, h, r, list = this.pills.slice().sort(function (m, n) { return m.z - n.z; });
     for (i = 0; i < list.length; i++) {
       p = list[i];
-      if (p.a <= 0.01) { continue; }
+      if (p.a <= 0.01 || !isFinite(p.x) || !isFinite(p.y)) { continue; }
       if (p.x < -40 || p.x > this.W + 40 || p.y < -40 || p.y > this.H + 40) { continue; }
       c.save(); c.globalAlpha = p.a;
       c.font = '700 ' + p.size + 'px ' + FONT;
@@ -360,6 +439,7 @@
   /* números grandes pintados en el piso (en perspectiva) */
   RP.floorNumber = function (x, y, s, size, color) {
     var c = this.ctx, q = this.P(x, y, 0), k = this.ppm(x, y, 0), ky = this.ppmV(x, y, 0);
+    if (!isFinite(q.x) || !isFinite(k) || !isFinite(ky)) { return; }
     c.save();
     c.translate(q.x, q.y);
     var sq = clamp(lerp(0.55, 1, 1 - this.e), 0.55, 1);
@@ -372,34 +452,50 @@
   };
 
   /* ---------- cancha ---------- */
+  /* juntas del piso: losetas cuadradas o tablas de madera; se apagan cuando quedan muy pequeñas en pantalla */
+  RP.drawSeams = function (S, x0, x1, y0, y1) {
+    var step = S.tile || S.plank;
+    if (!step || !S.seam) { return; }
+    var px = this.ppm(clamp(4.5, x0, x1), clamp(4.5, y0, y1), 0) * step;
+    var al = clamp((px - 2.5) / 5, 0, 1);
+    if (al <= 0.02) { return; }
+    var c = this.ctx, x, y;
+    c.save(); c.globalAlpha = al; c.beginPath();
+    for (x = Math.ceil(x0 / step) * step; x <= x1; x += step) { this.segTo([x, y0, 0], [x, y1, 0]); }
+    if (S.tile) { for (y = Math.ceil(y0 / step) * step; y <= y1; y += step) { this.segTo([x0, y, 0], [x1, y, 0]); } }
+    c.strokeStyle = S.seam; c.lineWidth = 1; c.stroke();
+    c.restore();
+  };
   RP.drawFloor = function (sc) {
-    var R = sc.view, c = this.ctx;
-    this.poly([[R.x0 - 8, R.y0 - 8], [R.x1 + 8, R.y0 - 8], [R.x1 + 8, R.y1 + 8], [R.x0 - 8, R.y1 + 8]], COL.floor);
+    var R = sc.view, c = this.ctx, S = surface();
+    this.poly([[R.x0 - 30, R.y0 - 30], [R.x1 + 30, R.y0 - 30], [R.x1 + 30, R.y1 + 30], [R.x0 - 30, R.y1 + 30]], S.floor);
     if (sc.court === 'floor') {
       var x, y;
+      if (S.seam) { this.drawSeams(S, R.x0 - 1, R.x1 + 1, R.y0 - 1, R.y1 + 1); return; }
       for (x = Math.ceil(R.x0); x <= R.x1; x++) { this.seg([x, R.y0], [x, R.y1], COL.floorLine, 1); }
       for (y = Math.ceil(R.y0); y <= R.y1; y++) { this.seg([R.x0, y], [R.x1, y], COL.floorLine, 1); }
       return;
     }
-    this.poly([[0, -9], [9, -9], [9, 0], [0, 0]], COL.courtRival);
-    this.poly([[0, 0], [9, 0], [9, 9], [0, 9]], COL.court);
-    this.poly([[0, 0], [9, 0], [9, 3], [0, 3]], COL.front);
+    this.poly([[0, -9], [9, -9], [9, 0], [0, 0]], S.courtRival);
+    this.poly([[0, 0], [9, 0], [9, 9], [0, 9]], S.court);
+    if (S.seam) { this.drawSeams(S, Math.max(-3, R.x0 - 1), Math.min(12, R.x1 + 1), Math.max(-12, R.y0 - 1), Math.min(12, R.y1 + 1)); }
+    this.poly([[0, 0], [9, 0], [9, 3], [0, 3]], S.front);
     var lw = clamp(this.ppm(4.5, 4.5, 0) * 0.05, 1.4, 2.6);
-    this.seg([3, 0.05], [3, 9], COL.lineSoft, 1, [2, 6]);
-    this.seg([6, 0.05], [6, 9], COL.lineSoft, 1, [2, 6]);
-    this.seg([0, 6], [9, 6], COL.lineSoft, 1, [2, 6]);
-    this.seg([0, -9], [0, 9], COL.line, lw); this.seg([9, -9], [9, 9], COL.line, lw);
-    this.seg([0, 9], [9, 9], COL.line, lw); this.seg([0, -9], [9, -9], COL.line, lw);
-    this.seg([0, 3], [9, 3], COL.line, lw); this.seg([0, -3], [9, -3], COL.line, lw);
-    this.seg([0, 0], [9, 0], COL.line, lw);
-    this.seg([-1.75, 3], [0, 3], COL.line, 1.1, [4, 4]); this.seg([9, 3], [10.75, 3], COL.line, 1.1, [4, 4]);
-    this.seg([-1.75, -3], [0, -3], COL.line, 1.1, [4, 4]); this.seg([9, -3], [10.75, -3], COL.line, 1.1, [4, 4]);
+    this.seg([3, 0.05], [3, 9], S.lineSoft, 1, [2, 6]);
+    this.seg([6, 0.05], [6, 9], S.lineSoft, 1, [2, 6]);
+    this.seg([0, 6], [9, 6], S.lineSoft, 1, [2, 6]);
+    this.seg([0, -9], [0, 9], S.line, lw); this.seg([9, -9], [9, 9], S.line, lw);
+    this.seg([0, 9], [9, 9], S.line, lw); this.seg([0, -9], [9, -9], S.line, lw);
+    this.seg([0, 3], [9, 3], S.line, lw); this.seg([0, -3], [9, -3], S.line, lw);
+    this.seg([0, 0], [9, 0], S.line, lw);
+    this.seg([-1.75, 3], [0, 3], S.line, 1.1, [4, 4]); this.seg([9, 3], [10.75, 3], S.line, 1.1, [4, 4]);
+    this.seg([-1.75, -3], [0, -3], S.line, 1.1, [4, 4]); this.seg([9, -3], [10.75, -3], S.line, 1.1, [4, 4]);
     if (sc.zones !== false) {
       var zn = [['4', 1.5, 1.5], ['3', 4.5, 1.5], ['2', 7.5, 1.5], ['5', 1.5, 6.3], ['6', 4.5, 6.3], ['1', 7.5, 6.3]], i;
       var znr = [['2', 1.5, -1.5], ['3', 4.5, -1.5], ['4', 7.5, -1.5], ['1', 1.5, -6.3], ['6', 4.5, -6.3], ['5', 7.5, -6.3]];
       var showTop = sc.zones === 'both' || sc.zones === 'top', showBottom = sc.zones !== 'top';
-      if (showBottom) { for (i = 0; i < zn.length; i++) { if (zn[i][2] <= R.y1 - 0.4) { this.floorNumber(zn[i][1], zn[i][2], zn[i][0], 1.25); } } }
-      if (showTop) { for (i = 0; i < znr.length; i++) { if (znr[i][2] >= R.y0 + 0.4) { this.floorNumber(znr[i][1], znr[i][2], znr[i][0], 1.1, 'rgba(255,255,255,0.07)'); } } }
+      if (showBottom) { for (i = 0; i < zn.length; i++) { if (zn[i][2] <= R.y1 - 0.4) { this.floorNumber(zn[i][1], zn[i][2], zn[i][0], 1.25, S.numbers); } } }
+      if (showTop) { for (i = 0; i < znr.length; i++) { if (znr[i][2] >= R.y0 + 0.4) { this.floorNumber(znr[i][1], znr[i][2], znr[i][0], 1.1, S.numbers ? S.numbers.replace(/[\d.]+\)$/, '0.09)') : 'rgba(255,255,255,0.07)'); } } }
     }
     c.save();
     var k0 = this.ppm(4.5, 4.5, 0), p3 = this.P(-0.55, 3, 0);
@@ -635,6 +731,10 @@
     this.playing = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     this.visible = false; this.last = 0;
     this.view = A.state.view; this.viewGoal = this.view;
+    /* cámara de la vista 3D: normal, receptor, lateral o sigue; orb = lo que el usuario giró, inclinó y acercó con el dedo */
+    this.camMode = 'normal';
+    this.orb = { az: 0, el: 0, zoom: 1, px: 0, py: 0 };
+    this.camAnim = null; this.lastCam = null; this.fol = null; this.folT = 0; this.folBusy = false; this.baseEl = 30;
     this.steps = [];
     var info = root.parentNode.querySelector('.info');
     if (info) { this.steps = Array.prototype.slice.call(info.querySelectorAll('.steps li')); }
@@ -714,6 +814,9 @@
       stage.appendChild(cv);
       this.cv = cv;
       this.R = new Renderer(cv);
+      this.fol = null; this.camAnim = null;
+      this.bindGestures(cv);
+      this.syncTouch();
       this.prep();
       this.side = null;
       var sideSvg = this.root.querySelector('svg.side');
@@ -798,11 +901,226 @@
       R.x0 = Math.max(sv.x0, Math.min.apply(null, xs) - pad); R.x1 = Math.min(sv.x1, Math.max.apply(null, xs) + pad);
       R.y0 = Math.max(sv.y0, Math.min.apply(null, ys) - pad - 0.8); R.y1 = Math.min(sv.y1, Math.max.apply(null, ys) + pad);   /* más margen al fondo: las cabezas del otro lado no se cortan */
     }
+    var Act = { x0: R.x0, x1: R.x1, y0: R.y0, y1: R.y1 };   /* solo donde pasa la acción (para las cámaras que pueden cortar la cancha) */
     /* la cancha completa a lo ancho y nuestra zona zaguera hasta la línea de fondo (no se corta) */
     if (sc.court !== 'floor') { R.x0 = Math.min(R.x0, -0.35); R.x1 = Math.max(R.x1, 9.35); R.y1 = Math.max(R.y1, Math.min(sv.y1, 9.35)); }
-    var fr = { R: R, cam: { el: gc.el || 30, az: (sc.cam && sc.cam.az) || 0, dist: gc.dist || 1.6 } };
+    var fr = { R: R, A: Act, cam: { el: gc.el || 30, az: (sc.cam && sc.cam.az) || 0, dist: gc.dist || 1.6 } };
     this.f3 = { sc: sc, el: gc.el, dist: gc.dist, pad: gc.pad, fr: fr };
     return fr;
+  };
+
+  /* ======================= CÁMARAS DE LA VISTA 3D ======================= */
+  /* normal: la de siempre. receptor: baja, detrás de nuestra línea de fondo, mirando al sacador.
+     lateral: de lado, como la TV (carrera, salto y altura de la colocación). sigue: va con el balón, suave (puede cortar la cancha).
+     Con el dedo: de lado a lado gira 360°, de arriba abajo sube o baja la cámara, pellizcando acerca; doble toque vuelve. */
+  A.CAMS = [['normal', 'Normal'], ['receptor', 'Receptor'], ['lateral', 'Lateral'], ['sigue', 'Sigue la jugada']];
+  A.CAMCFG = {
+    receptor: { el: 12, back: 1.8, near: 6.0, half: 3.2, tz: 0.9 },
+    lateral: { el: 17, az: -68, dist: 0.9, box: 9.0 },
+    sigue: { el: 24, box: 8.5, dist: 1.0, tau: 0.45 },
+    elMin: 5, elMax: 80, zoomMin: 0.6, zoomMax: 4
+  };
+  function perfNow() { return (window.performance && window.performance.now) ? window.performance.now() : Date.now(); }
+  function normAng(a) { a = a % 360; if (a > 180) { a -= 360; } if (a < -180) { a += 360; } return a; }
+  function orbZero(o) { return Math.abs(o.az) < 0.01 && Math.abs(o.el) < 0.01 && Math.abs(o.zoom - 1) < 0.001 && Math.abs(o.px) < 0.0005 && Math.abs(o.py) < 0.0005; }
+  /* la región y la cámara de la vista 3D de siempre (con la capa 3D real, el encuadre de la acción) */
+  DP.baseFrame = function () { return this.can3d() ? this.frame3d() : { R: this.sc.view, cam: this.sc.cam || {} }; };
+  DP.camNormal = function () {
+    var fr = this.baseFrame(), R = this.R, nh = this.sc.net ? this.sc.net.h : 0, p = camBase(1, fr.R, fr.cam);
+    return withFit(p, fitFor(camOf(p), boundsPts(fr.R, 1, nh), R.W, R.H, R.pad));
+  };
+  /* a dónde va la cámara que sigue la jugada: el balón (o el centro de la acción si no hay balón) */
+  DP.followGoal = function (t) {
+    var lists = this.lists || [], i, b;
+    for (i = 0; i < lists.length; i++) {
+      b = this.ballAt(lists[i], t);
+      if (b && b.a > 0.3) { return [clamp(b.pos[0], -0.5, 9.5), clamp(b.pos[1], -10.5, 10.5), clamp(0.3 + b.pos[2] * 0.4, 0.3, 1.8)]; }
+    }
+    var V = this.baseFrame().R;
+    return [(V.x0 + V.x1) / 2, (V.y0 + V.y1) / 2, 0.4];
+  };
+  DP.camPreset = function (mode) {
+    var sc = this.sc, R = this.R, bf = this.baseFrame(), V = bf.R, Act = bf.A || V, nh = sc.net ? sc.net.h : 0, cfg = A.CAMCFG[mode] || {}, p, pts;
+    if (mode === 'receptor') {
+      /* detrás de nuestra línea de fondo; se encuadra el lado del sacador y a los receptores (puede cortar las esquinas de cerca) */
+      var yb = sc.court === 'floor' ? V.y1 : 9, yn = clamp(cfg.near, V.y0 + 3, Math.max(V.y0 + 3, V.y1));
+      var cxr = (Act.x0 + Act.x1) / 2, hw = cfg.half, xa = cxr - hw, xb = cxr + hw;
+      p = { tx: cxr, ty: (V.y0 + yn) / 2, tz: cfg.tz, el: cfg.el, az: 0, dist: 10 };
+      p.dist = Math.max(5, (yb + cfg.back - p.ty) / Math.cos(rad(cfg.el)));
+      pts = [[Act.x0, V.y0, 0], [Act.x1, V.y0, 0], [Act.x0, V.y0, 2.6], [Act.x1, V.y0, 2.6], [xa, yn, 0], [xb, yn, 0], [xa, yn, 1.8], [xb, yn, 1.8]];
+    } else if (mode === 'lateral') {
+      /* de lado, de cerca: una ventana de cfg.box metros sobre la acción de nuestro lado, con la malla (puede cortar la cancha) */
+      var lx = sc.court === 'floor' ? (Act.x0 + Act.x1) / 2 : clamp((Act.x0 + Act.x1) / 2, 2.5, 6.5);
+      var ly = sc.court === 'floor' ? (Act.y0 + Act.y1) / 2 : clamp((Math.max(Act.y0, 0) + Math.min(Act.y1, 9)) / 2, 1.8, 4.5);
+      var hb = cfg.box / 2, Lb = { x0: lx - hb, x1: lx + hb, y0: ly - hb, y1: ly + hb };
+      p = camBase(1, Lb, { el: cfg.el, az: cfg.az, dist: cfg.dist });
+      withFit(p, fitFor(camOf(p), [[Lb.x0, Lb.y0, 0], [Lb.x1, Lb.y0, 0], [Lb.x1, Lb.y1, 0], [Lb.x0, Lb.y1, 0], [lx, ly, 2.6]], R.W, R.H, R.pad));
+      p.ox = R.W / 2; p.oy = R.H * 0.58;
+      return p;
+    } else if (mode === 'sigue') {
+      var g = this.fol || this.followGoal(this.t), h = cfg.box / 2;
+      var B = { x0: 4.5 - h, x1: 4.5 + h, y0: 3 - h, y1: 3 + h };
+      p = camBase(1, B, { el: cfg.el, az: 0, dist: cfg.dist });
+      withFit(p, fitFor(camOf(p), boundsPts(B, 1, 0), R.W, R.H, R.pad));
+      p.tx = g[0]; p.ty = g[1]; p.tz = g[2];
+      p.ox = R.W / 2; p.oy = R.H * 0.55;
+      return p;
+    } else {
+      return this.camNormal();
+    }
+    return withFit(p, fitFor(camOf(p), pts, R.W, R.H, R.pad));
+  };
+  /* la cámara escogida más lo que el usuario giró y acercó */
+  DP.camTarget = function (t, now) {
+    var R = this.R, o = this.orb, cfg = A.CAMCFG;
+    if (this.camMode === 'sigue') {
+      var g = this.followGoal(t), dt = (now - this.folT) / 1000, i;
+      this.folT = now;
+      if (!this.fol || dt > 0.5 || dt < 0) { this.fol = g.slice(); }
+      else { var k = 1 - Math.exp(-Math.min(dt, 0.1) / cfg.sigue.tau); for (i = 0; i < 3; i++) { this.fol[i] += (g[i] - this.fol[i]) * k; } }
+      this.folBusy = Math.abs(g[0] - this.fol[0]) + Math.abs(g[1] - this.fol[1]) + Math.abs(g[2] - this.fol[2]) > 0.02;
+    } else { this.folBusy = false; }
+    var p = this.camPreset(this.camMode);
+    this.baseEl = p.el;
+    p.az = normAng(p.az + o.az);
+    p.el = clamp(p.el + o.el, cfg.elMin, cfg.elMax);
+    var cx = R.W / 2, cy = R.H / 2;
+    p.ox = cx + (p.ox - cx) * o.zoom + o.px * R.W;
+    p.oy = cy + (p.oy - cy) * o.zoom + o.py * R.W;
+    p.s *= o.zoom;
+    return p;
+  };
+  /* después de R.setView (la cámara de siempre): si hay otra cámara, giro o zoom, se cambia aquí.
+     Al pasar a la vista desde arriba, lo que el usuario cambió se va desvaneciendo con la transición. */
+  DP.applyCam = function (t, use3d) {
+    var R = this.R;
+    if (this.view <= 0.001 || !R.fit) { this.lastCam = null; this.folBusy = false; this.camAnim = null; return; }
+    var now = perfNow();
+    var fr = use3d ? this.frame3d() : { R: this.sc.view, cam: this.sc.cam || {} };
+    var L = withFit(camBase(R.e, fr.R, fr.cam), R.fit);
+    if (this.camMode === 'normal' && !this.camAnim && orbZero(this.orb)) { this.lastCam = L; this.folBusy = false; return; }
+    var C = this.camTarget(t, now);
+    if (this.camAnim) {
+      var u = (now - this.camAnim.t0) / this.camAnim.dur;
+      if (u >= 1) { this.camAnim = null; } else { C = lerpCam(this.camAnim.from, C, ease(u)); }
+    }
+    var D = C;
+    if (R.e < 0.999) {
+      var N = this.camNormal(), w = R.e;
+      D = {
+        tx: L.tx + (C.tx - N.tx) * w, ty: L.ty + (C.ty - N.ty) * w, tz: L.tz + (C.tz - N.tz) * w,
+        dist: L.dist * Math.pow(C.dist / N.dist, w), el: L.el + (C.el - N.el) * w, az: L.az + normAng(C.az - N.az) * w,
+        s: L.s * Math.pow(C.s / N.s, w), ox: L.ox + (C.ox - N.ox) * w, oy: L.oy + (C.oy - N.oy) * w
+      };
+    }
+    R.useCam(D);
+    this.lastCam = D;
+  };
+  /* cambia de cámara con una transición suave */
+  DP.setCam = function (mode) {
+    if (!A.CAMCFG[mode] && mode !== 'normal') { return; }
+    if (this.lastCam) { this.camAnim = { from: copyCam(this.lastCam), t0: perfNow(), dur: 650 }; }
+    this.camMode = mode;
+    this.orb = { az: 0, el: 0, zoom: 1, px: 0, py: 0 };
+    this.fol = null;
+    if (this.syncCams) { this.syncCams(); }
+    this.kick();
+  };
+  /* doble toque: vuelve al ángulo y al zoom de la cámara escogida */
+  DP.resetOrbit = function () {
+    if (orbZero(this.orb)) { return; }
+    if (this.lastCam) { this.camAnim = { from: copyCam(this.lastCam), t0: perfNow(), dur: 500 }; }
+    this.orb = { az: 0, el: 0, zoom: 1, px: 0, py: 0 };
+    this.kick();
+  };
+  /* vuelve a dibujar si está en pausa (si está corriendo, el próximo cuadro ya lo hace) */
+  DP.kick = function () { if (!this.playing && this.sc) { this.render(this.t); } };
+  /* acercar o alejar alrededor de un punto de la pantalla (m0 al empezar, m ahora) */
+  DP.zoomAt = function (o0, k, m0, m) {
+    var R = this.R, cfg = A.CAMCFG, W = R.W, H = R.H, o = this.orb;
+    var z = clamp(o0.zoom * k, cfg.zoomMin, cfg.zoomMax), kk = z / o0.zoom, cx = W / 2, cy = H / 2;
+    var px = m.x - cx - (m0.x - cx - o0.px * W) * kk, py = m.y - cy - (m0.y - cy - o0.py * W) * kk;
+    px = clamp(px, -W * 0.6 * z, W * 0.6 * z); py = clamp(py, -H * 0.6 * z, H * 0.6 * z);
+    o.zoom = z; o.px = px / W; o.py = py / W;
+  };
+  /* en 3D el dedo sobre el diagrama mueve la cámara; en la vista desde arriba baja la página como siempre */
+  DP.syncTouch = function () {
+    if (!this.cv) { return; }
+    var on = this.viewGoal > 0.5;
+    this.cv.style.touchAction = on ? 'none' : 'auto';
+    this.cv.style.cursor = on ? 'grab' : '';
+    this.cv.style.webkitUserSelect = on ? 'none' : ''; this.cv.style.userSelect = on ? 'none' : '';
+    this.cv.style.webkitTouchCallout = on ? 'none' : '';
+  };
+  DP.bindGestures = function (cv) {
+    var self = this, ptrs = {}, g = null, tap = { t: 0, x: 0, y: 0 }, down = null, gs = null;
+    function on() { return self.viewGoal > 0.5 && !!self.sc; }
+    function list() { var out = [], k; for (k in ptrs) { if (Object.prototype.hasOwnProperty.call(ptrs, k)) { out.push(ptrs[k]); } } return out; }
+    function local(e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function mid(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+    function dst(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
+    function snap() { var o = self.orb; return { az: o.az, el: o.el, zoom: o.zoom, px: o.px, py: o.py }; }
+    function begin() {
+      var L = list();
+      g = { o: snap() };
+      if (L.length >= 2) { g.m = mid(L[0], L[1]); g.d = Math.max(12, dst(L[0], L[1])); }
+      else if (L.length === 1) { g.p = { x: L[0].x, y: L[0].y }; }
+    }
+    function changed() { self.kick(); }
+    cv.addEventListener('pointerdown', function (e) {
+      try {
+        if (!on() || (e.pointerType === 'mouse' && e.button !== 0)) { return; }
+        ptrs[e.pointerId] = local(e);
+        try { cv.setPointerCapture(e.pointerId); } catch (e1) { void e1; }
+        down = list().length === 1 ? { t: perfNow(), x: ptrs[e.pointerId].x, y: ptrs[e.pointerId].y, moved: false } : null;
+        begin();
+        if (e.pointerType === 'mouse') { cv.style.cursor = 'grabbing'; }
+        e.preventDefault();
+      } catch (err) { if (window.console) { console.error('gesto', err); } }
+    });
+    cv.addEventListener('pointermove', function (e) {
+      try {
+        if (!ptrs[e.pointerId] || !g) { return; }
+        ptrs[e.pointerId] = local(e);
+        var L = list(), W = Math.max(160, self.R.W), H = Math.max(120, self.R.H), o = self.orb, cfg = A.CAMCFG;
+        if (L.length >= 2 && g.m) {
+          self.zoomAt(g.o, dst(L[0], L[1]) / g.d, g.m, mid(L[0], L[1]));
+        } else if (L.length === 1 && g.p) {
+          var dx = L[0].x - g.p.x, dy = L[0].y - g.p.y;
+          if (down && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) { down.moved = true; }
+          o.az = normAng(g.o.az - dx / W * 240);
+          o.el = clamp(g.o.el + dy / H * 70, cfg.elMin - self.baseEl, cfg.elMax - self.baseEl);
+        }
+        changed();
+        e.preventDefault();
+      } catch (err) { if (window.console) { console.error('gesto', err); } }
+    });
+    function up(e) {
+      if (!ptrs[e.pointerId]) { return; }
+      delete ptrs[e.pointerId];
+      var now = perfNow();
+      if (down && !down.moved && list().length === 0 && now - down.t < 350) {
+        if (now - tap.t < 400 && Math.abs(down.x - tap.x) < 40 && Math.abs(down.y - tap.y) < 40) { tap.t = 0; self.resetOrbit(); }
+        else { tap.t = now; tap.x = down.x; tap.y = down.y; }
+      }
+      down = null;
+      begin();
+      if (self.viewGoal > 0.5) { cv.style.cursor = 'grab'; }
+    }
+    cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointercancel', up);
+    /* laptop: Ctrl + rueda, o pellizco en el trackpad (Chrome, Firefox, Edge); la rueda sola sigue bajando la página */
+    cv.addEventListener('wheel', function (e) {
+      if (!on() || !e.ctrlKey) { return; }
+      e.preventDefault();
+      var p = local(e);
+      self.zoomAt(snap(), Math.exp(-clamp(e.deltaY, -60, 60) * 0.012), p, p);
+      changed();
+    }, { passive: false });
+    /* Safari en Mac: pellizco en el trackpad */
+    cv.addEventListener('gesturestart', function (e) { if (!on() || list().length) { return; } e.preventDefault(); gs = { o: snap(), m: local(e) }; });
+    cv.addEventListener('gesturechange', function (e) { if (!gs) { return; } e.preventDefault(); self.zoomAt(gs.o, e.scale || 1, gs.m, gs.m); changed(); });
+    cv.addEventListener('gestureend', function (e) { if (gs) { e.preventDefault(); } gs = null; });
   };
   DP.actorPos = function (id, t) { var a = this.sc.actors[id]; return a ? samplePos(a.track, t) : [0, 0]; };
   DP.faceAngle = function (id, t, pos) {
@@ -1320,6 +1638,7 @@
       }
       R.hideDims = use3d;
       R.setView(this.view, sc, use3d ? this.frame3d() : null);
+      this.applyCam(t, use3d);
       c.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       c.clearRect(0, 0, R.W, R.H);
       c.fillStyle = COL.bg; c.fillRect(0, 0, R.W, R.H);
@@ -1365,10 +1684,12 @@
       items.sort(function (m, n) { return n.d - m.d; });
       var self = this, hasNet = !!sc.net;
       function drawIt(itm) {
-        if (itm.k === 'a') { self.drawFigure(R, itm.id, itm.P, itm.al, { actor: sc.actors[itm.id], hl: itm.hl, t: t }); }
-        else if (itm.k === 'b') { drawBall(R, itm.b); }
-        else if (itm.k === 'cone') { R.drawCone(itm.p); }
-        else if (itm.k === 'q') { self.drawQueue(R, itm.it); }
+        try {   /* con la cámara girada, algo que queda detrás de la cámara no se dibuja (y no tumba el cuadro) */
+          if (itm.k === 'a') { self.drawFigure(R, itm.id, itm.P, itm.al, { actor: sc.actors[itm.id], hl: itm.hl, t: t }); }
+          else if (itm.k === 'b') { drawBall(R, itm.b); }
+          else if (itm.k === 'cone') { R.drawCone(itm.p); }
+          else if (itm.k === 'q') { self.drawQueue(R, itm.it); }
+        } catch (eI) { void eI; }
       }
       if (use3d) {
         for (i = 0; i < items.length; i++) { drawIt(items[i]); }
@@ -1378,9 +1699,9 @@
         if (!drawn) {
           /* si la capa 3D falla, se dibujan las figuras de siempre */
           if (hasNet) { R.drawNet(sc); }
-          for (i = 0; i < frame.actors.length; i++) { var fa2 = frame.actors[i]; this.drawFigure(R, fa2.id, fa2.P, fa2.al, { actor: fa2.actor, hl: 0, t: t }); }
-          for (i = 0; i < frame.queue.length; i++) { this.drawQueue(R, frame.queue[i].it); }
-          for (i = 0; i < balls.length; i++) { drawBall(R, balls[i]); }
+          for (i = 0; i < frame.actors.length; i++) { var fa2 = frame.actors[i]; drawIt({ k: 'a', id: fa2.id, P: fa2.P, al: fa2.al, hl: 0 }); }
+          for (i = 0; i < frame.queue.length; i++) { drawIt({ k: 'q', it: frame.queue[i].it }); }
+          for (i = 0; i < balls.length; i++) { drawIt({ k: 'b', b: balls[i] }); }
         } else {
           for (i = 0; i < frame.actors.length; i++) { if (frame.actors[i].al > 0.05) { this.figureLabel(R, frame.actors[i].P, frame.actors[i].al, frame.actors[i].actor, 0.08 * frame.actors[i].P.k); } }
         }
@@ -1422,6 +1743,25 @@
   };
 
   /* ---------- controles ---------- */
+  /* estilo de la fila de cámaras; usa los colores de la página si los tiene (--gold, --navy...) */
+  var cssDone = false;
+  function injectCss() {
+    if (cssDone || typeof document === 'undefined') { return; }
+    cssDone = true;
+    var st = document.createElement('style');
+    st.setAttribute('data-voleii', 'action');
+    st.textContent = [
+      '.va-cams{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px 10px;border-top:1px solid var(--line,rgba(255,255,255,.12));background:rgba(6,22,51,.6)}',
+      '.va-cams[hidden]{display:none}',
+      '.va-seg{display:inline-flex;flex-wrap:wrap;gap:5px}',
+      '.va-seg button{font:inherit;font-weight:700;font-size:14px;line-height:1;color:var(--soft,#D8E2F5);background:var(--navy3,#14336E);border:1px solid var(--line2,rgba(255,255,255,.22));border-radius:999px;padding:7px 11px;cursor:pointer;white-space:nowrap}',
+      '.va-seg button:hover{border-color:var(--gold,#FFCF28)}',
+      '.va-seg button[aria-pressed="true"]{background:var(--gold,#FFCF28);color:var(--navy,#061633);border-color:var(--gold,#FFCF28)}',
+      '.va-seg button:focus-visible{outline:2px solid var(--gold,#FFCF28);outline-offset:2px}',
+      '.va-hint{font-size:13px;line-height:1.25;color:var(--muted,#A3B5DA)}'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(st);
+  }
   DP.buildControls = function () {
     var self = this, c = this.root.querySelector('.ctrls');
     if (!c) { return; }
@@ -1441,9 +1781,41 @@
     syncPlay(); syncView();
     bPlay.addEventListener('click', function () { self.playing = !self.playing; self.last = 0; syncPlay(); });
     bRe.addEventListener('click', function () { self.t = 0; self.render(0); });
-    bSp.addEventListener('click', function () { self.speed = self.speed === 1 ? 0.5 : 1; bSp.textContent = self.speed === 1 ? '1x' : '0.5x'; });
+    /* velocidad: 1x, 0.5x y 0.25x (cámara lenta para ver el pie y la plataforma) */
+    bSp.addEventListener('click', function () {
+      self.speed = self.speed === 1 ? 0.5 : (self.speed === 0.5 ? 0.25 : 1);
+      bSp.textContent = self.speed + 'x';
+      bSp.setAttribute('aria-label', 'Velocidad ' + self.speed + 'x');
+    });
+    /* fila de cámaras (solo en 3D) */
+    injectCss();
+    var row = document.createElement('div');
+    row.className = 'va-cams';
+    var seg = document.createElement('div');
+    seg.className = 'va-seg'; seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Cámara');
+    var camBtns = [];
+    A.CAMS.forEach(function (cm) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = cm[1]; b.setAttribute('data-cam', cm[0]);
+      b.addEventListener('click', function () { self.setCam(cm[0]); });
+      seg.appendChild(b); camBtns.push(b);
+    });
+    var hint = document.createElement('span');
+    hint.className = 'va-hint';
+    var touch = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    hint.textContent = touch ? 'Arrastra para girar · pellizca para acercar · doble toque para volver'
+      : 'Arrastra para girar · Ctrl + rueda o pellizco para acercar · doble clic para volver';
+    row.appendChild(seg); row.appendChild(hint);
+    if (c.nextSibling) { c.parentNode.insertBefore(row, c.nextSibling); } else { c.parentNode.appendChild(row); }
+    this.camRow = row;
+    function syncCams() {
+      for (var k = 0; k < camBtns.length; k++) { camBtns[k].setAttribute('aria-pressed', camBtns[k].getAttribute('data-cam') === self.camMode ? 'true' : 'false'); }
+      row.hidden = !(self.viewGoal > 0.5);
+    }
+    this.syncCams = syncCams;
+    syncCams();
     bV.addEventListener('click', function () {
-      self.viewGoal = self.viewGoal > 0.5 ? 0 : 1; syncView();
+      self.viewGoal = self.viewGoal > 0.5 ? 0 : 1; syncView(); syncCams(); self.syncTouch();
       try { if (self.cv && self.sc) { self.cv.style.aspectRatio = self.aspectGoal().toFixed(3); } } catch (err) { if (window.console) { console.error('vista', err); } }
       self.render(self.t);
     });
@@ -1461,7 +1833,7 @@
     }
   };
   DP.tick = function (now) {
-    var moving = this.view !== this.viewGoal;
+    var moving = this.view !== this.viewGoal || !!this.camAnim || this.folBusy;
     if ((!this.playing && !moving) || !this.visible) { this.last = 0; return; }
     if (this.last) {
       var dt = Math.min((now - this.last) / 1000, 0.1);
@@ -1476,9 +1848,13 @@
     this.playing = false; this.view = view; this.viewGoal = view; this.t = t;
     var keep = this.cv.style.aspectRatio;
     if (fit) { this.cv.style.aspectRatio = (view >= 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, view)).toFixed(3); }
+    /* las capturas (PDF) salen siempre con la cámara normal */
+    var km = this.camMode, ko = this.orb;
+    this.camMode = 'normal'; this.orb = { az: 0, el: 0, zoom: 1, px: 0, py: 0 }; this.camAnim = null;
     this.R.forceDpr = dpr || 2.5;
     this.render(t);
     var url = this.cv.toDataURL('image/png');
+    this.camMode = km; this.orb = ko;
     this.R.forceDpr = 0;
     if (fit) { this.cv.style.aspectRatio = keep; }
     return url;
@@ -1499,6 +1875,7 @@
       if (o.age) { A.state.age = o.age; }
       if (o.view !== undefined) { A.state.view = o.view; }
       if (o.figScale) { A.state.figScale = o.figScale; }
+      if (o.floor && FLOORS[o.floor]) { A.state.floor = o.floor; }
       var scope = o.root || document;
       var roots = scope.querySelectorAll(o.selector || '.dia[data-engine="action"]');
       for (var i = 0; i < roots.length; i++) { var d = new Diagram(roots[i]); diagrams.push(d); made.push(d); }
@@ -1524,7 +1901,13 @@
     try { for (var k = 0; k < diagrams.length; k++) { if (diagrams[k].visible && diagrams[k].sc) { diagrams[k].render(diagrams[k].t); } } }
     catch (err) { if (window.console) { console.error('refresh', err); } }
   }
-  A.mount = mount; A.setAge = setAge; A.diagrams = diagrams; A.Diagram = Diagram; A.refresh = refresh;
+  /* piso de todas las canchas: 'losetas', 'sintetico' o 'madera' */
+  function setFloor(f) {
+    if (!FLOORS[f]) { return; }
+    A.state.floor = f;
+    refresh();
+  }
+  A.mount = mount; A.setAge = setAge; A.diagrams = diagrams; A.Diagram = Diagram; A.refresh = refresh; A.setFloor = setFloor;
   A.BODY = BODY;
 
   /* ======================= VISTA LATERAL DE LA CARRERA (de voleii-drills) ======================= */

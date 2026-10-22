@@ -11,6 +11,7 @@
    - Vista 3D: cuerpos reales. Vista desde arriba y PDF: las marcas del motor.
    - Si WebGL no está o algo falla, el motor dibuja sus figuras de siempre.
    - Uniformes por equipo: VOLEII.Action.GL.setTeam('vaqueros' | 'plataneros').
+   - Rodilleras blancas en los jugadores (el coach no lleva); postes acolchados, bandas laterales y antenas en la malla.
 
    Cuerpos: Microsoft Rocketbox Avatar Library (licencia MIT): cuerpo Sports_Male_04 (sin mangas)
    con el uniforme repintado y medias blancas a media pierna; cabezas de los modelos 04, 02 y 03.
@@ -23,7 +24,7 @@
   var A = VO.Action;
   if (!A || !VO.T3) { if (root.console) { console.warn('voleii-action-3d: falta voleii-action.js o voleii-three.min.js'); } return; }
   var T3 = VO.T3, THREE = T3.THREE;
-  var G = A.GL = { ready: false, failed: false, version: '1.1.0' };
+  var G = A.GL = { ready: false, failed: false, version: '1.2.0' };
 
   /* ======================= UNIFORMES ======================= */
   /* medias: siempre blancas y a media pierna (las pinta la máscara del cuerpo); pantalón blanco o verde, nunca negro */
@@ -260,12 +261,44 @@
       });
     }
     Object.keys(BN).forEach(function (k) { inst.bones[k] = byNorm[normName(BN[k])]; });
+    if (role !== 'coach') { addKneepads(inst); }
     inst.u.kSkin.value.set(look.body[0], look.body[1], look.body[2]);
     inst.uh.kSkin.value.set(look.face[0], look.face[1], look.face[2]);
     setKit(inst, (TEAMS[S.team] || TEAMS.vaqueros)[role] || 'blanco');
     inst.group.add(obj);
     S.scene.add(inst.group);
     return inst;
+  }
+  /* rodilleras blancas: una manga en cada rodilla, colgada del hueso de la pantorrilla (sigue la pierna) */
+  /* medidas en cm del modelo (180,5 cm de estatura): radio arriba y abajo, largo y dónde queda el centro (bajo la rodilla) */
+  var KNEE = { color: '#F3F5F8', rTop: 7.6, rBot: 7.2, len: 12, center: 2.4, front: -0.4 };
+  function addKneepads(inst) {
+    var m = inst.m, sh = shared();
+    inst.obj.updateMatrixWorld(true);
+    ['L', 'R'].forEach(function (S) {
+      var ca = inst.bones['ca' + S], ft = inst.bones['ft' + S];
+      if (!ca || !ft) { return; }
+      var axis = ft.position.clone(), localLen = axis.length();
+      if (localLen < 1e-6) { return; }
+      axis.normalize();
+      var u = localLen / m.len.calf;                       /* cm del modelo -> unidades del hueso */
+      /* el frente de la pierna (el modelo mira hacia +Z) en las coordenadas del hueso, para centrar la rodillera sobre la rodilla */
+      var qw = new THREE.Quaternion(); ca.getWorldQuaternion(qw);
+      var fwd = new V3(0, 0, 1).applyQuaternion(qw.invert());
+      fwd.addScaledVector(axis, -fwd.dot(axis));
+      if (fwd.lengthSq() > 1e-8) { fwd.normalize(); } else { fwd.set(0, 0, 0); }
+      if (!sh.kneeGeo || sh.kneeU !== u) {
+        sh.kneeU = u;
+        sh.kneeGeo = new THREE.CylinderGeometry(KNEE.rTop * u, KNEE.rBot * u, KNEE.len * u, 22, 1, true);
+      }
+      var mat = new THREE.MeshStandardMaterial({ color: KNEE.color, roughness: 0.8, metalness: 0, side: THREE.DoubleSide });
+      var kp = new THREE.Mesh(sh.kneeGeo, mat);
+      kp.quaternion.setFromUnitVectors(new V3(0, 1, 0), axis.clone().negate());   /* el lado ancho hacia el muslo */
+      kp.position.copy(axis).multiplyScalar(KNEE.center * u).addScaledVector(fwd, KNEE.front * u);
+      kp.castShadow = true; kp.frustumCulled = false;
+      ca.add(kp);
+      inst.mats.push(mat);
+    });
   }
   function setAlpha(inst, a) {
     if (inst.alpha === a) { return; }
@@ -471,9 +504,19 @@
     var post = new THREE.MeshStandardMaterial({ color: '#6B778A', roughness: 0.4, metalness: 0.35 });
     add(new THREE.CylinderGeometry(0.05, 0.05, h + 0.15, 18), post, -0.9, (h + 0.15) / 2, 0, true);
     add(new THREE.CylinderGeometry(0.05, 0.05, h + 0.15, 18), post, 9.9, (h + 0.15) / 2, 0, true);
+    /* postes acolchados en azul Vaqueros, con una franja dorada arriba */
+    var padH = Math.min(1.9, h - 0.12), pad = new THREE.MeshStandardMaterial({ color: '#0E3A8A', roughness: 0.78 });
+    var padTop = new THREE.MeshStandardMaterial({ color: '#FFCF28', roughness: 0.7 });
+    [-0.9, 9.9].forEach(function (x) {
+      add(new THREE.CylinderGeometry(0.115, 0.115, padH, 24), pad, x, padH / 2, 0, true);
+      add(new THREE.CylinderGeometry(0.118, 0.118, 0.07, 24), padTop, x, padH - 0.13, 0, false);
+    });
+    /* bandas blancas a los lados de la malla, sobre cada línea lateral */
+    [0, 9].forEach(function (x) { add(new THREE.BoxGeometry(0.05, 1.0, 0.01), white, x, bh + 0.5, 0, false); });
+    /* antenas rojas y blancas */
     var ant = new THREE.MeshStandardMaterial({ map: sh.antTex, roughness: 0.5 });
-    add(new THREE.CylinderGeometry(0.012, 0.012, 1.8, 10), ant, 0, bh + 0.9, 0, false);
-    add(new THREE.CylinderGeometry(0.012, 0.012, 1.8, 10), ant, 9, bh + 0.9, 0, false);
+    add(new THREE.CylinderGeometry(0.014, 0.014, 1.8, 10), ant, 0, bh + 0.9, 0, false);
+    add(new THREE.CylinderGeometry(0.014, 0.014, 1.8, 10), ant, 9, bh + 0.9, 0, false);
     S.scene.add(grp);
     S.dispose = S.dispose.concat(list);
   }

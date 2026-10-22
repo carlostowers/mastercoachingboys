@@ -310,6 +310,10 @@ body[data-ses="2"] .s1-only{display:none !important}
 .ses a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media (min-width:820px){.ses a{font-size:28px}}
 .tl .mv{background:#C6A11F;color:var(--navy)}
+
+/* ---------- Piso de la cancha (Sesión 2, vista 3D y desde arriba) ---------- */
+.floorctl{flex-wrap:wrap}
+@media (max-width:600px){ .floorctl .lbl{display:inline} .floorctl .seg button{font-size:14px;padding:6px 10px} }
 </style>
 </head>
 <body data-view="coach" data-age="9-10" data-ses="2">
@@ -1051,6 +1055,7 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Saque → Recibo</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:08 · Turno 2 10:38</div>
       </div>
+      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1154,6 +1159,7 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Recibo → Colocación</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:27 · Turno 2 10:57</div>
       </div>
+      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1257,6 +1263,7 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Colocación → Ataque</h2>
         <div class="st-sub">17 minutos: 2 de explicación y 15 de trabajo · Turno 1 9:46 · Turno 2 11:16</div>
       </div>
+      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1383,6 +1390,7 @@ body[data-ses="2"] .s1-only{display:none !important}
         <h2 class="st-title">Mini-voleibol</h2>
         <div class="st-sub">20 minutos de juego · Turno 1 10:05 · Turno 2 11:35 · Cada cancha dividida a lo largo en 2 mini-canchas</div>
       </div>
+      <div class="ctl floorctl"><span class="lbl">Piso</span><div class="seg segFloor" role="group" aria-label="Piso de la cancha"><button type="button" data-f="losetas" aria-pressed="true">Losetas Collazo</button><button type="button" data-f="sintetico" aria-pressed="false">Sintético</button><button type="button" data-f="madera" aria-pressed="false">Madera</button></div></div>
     </div>
     <div class="grid2">
       <div class="card">
@@ -1520,6 +1528,19 @@ body[data-ses="2"] .s1-only{display:none !important}
     D.setAge(a);
     if (AC) { AC.setAge(a); }
   }
+  /* piso de todas las canchas de la Sesión 2: losetas (Complejo Collazo), sintético o madera; se recuerda en este navegador */
+  var FLOOR_KEY = 'mcb.piso';
+  function readFloor() {
+    try { var f = window.localStorage.getItem(FLOOR_KEY); if (f === 'losetas' || f === 'sintetico' || f === 'madera') { return f; } } catch (e) { /* sin acción */ }
+    return 'losetas';
+  }
+  function setFloor(f, save) {
+    state.floor = f;
+    var bs = document.querySelectorAll('.segFloor button');
+    for (var i = 0; i < bs.length; i++) { bs[i].setAttribute('aria-pressed', bs[i].getAttribute('data-f') === f ? 'true' : 'false'); }
+    if (AC && AC.setFloor) { AC.setFloor(f); }
+    if (save) { try { window.localStorage.setItem(FLOOR_KEY, f); } catch (e) { /* sin acción */ } }
+  }
   function setPage(p, scroll) {
     if (PAGES.indexOf(p) < 0) { p = 's2-horario'; }
     state.page = p;
@@ -1550,7 +1571,13 @@ body[data-ses="2"] .s1-only{display:none !important}
     try {
       if (!D) { throw new Error('Falta engine/voleii-drills.js'); }
       D.mount({ age: state.age, selector: '.dia[data-scene]:not([data-engine])' });
-      if (AC) { AC.mount({ age: state.age, view: 1, figScale: 1.15 }); }   /* jugadores 15 % más grandes que el tamaño real */
+      state.floor = readFloor();
+      if (AC) { AC.mount({ age: state.age, view: 1, figScale: 1.15, floor: state.floor }); }   /* jugadores 15 % más grandes que el tamaño real */
+      setFloor(state.floor, false);
+      var fsegs = document.querySelectorAll('.segFloor');
+      for (var fi = 0; fi < fsegs.length; fi++) {
+        fsegs[fi].addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { setFloor(b.getAttribute('data-f'), true); } });
+      }
       document.getElementById('segView').addEventListener('click', function (e) {
         var b = e.target.closest('button'); if (b) { setView(b.getAttribute('data-v')); }
       });
@@ -1560,7 +1587,7 @@ body[data-ses="2"] .s1-only{display:none !important}
       window.addEventListener('hashchange', function () { setPage(location.hash.replace('#', ''), true); });
       setPage(location.hash.replace('#', ''), false);
       setAge(state.age);
-      window.MCB = { diagrams: D.diagrams, action: AC ? AC.diagrams : [], setAge: setAge, setView: setView, setPage: setPage };
+      window.MCB = { diagrams: D.diagrams, action: AC ? AC.diagrams : [], setAge: setAge, setView: setView, setPage: setPage, setFloor: setFloor };
     } catch (err) {
       if (window.console) { console.error('init', err); }
     }
