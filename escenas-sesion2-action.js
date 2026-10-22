@@ -293,7 +293,7 @@
     };
     if (back) { actors.C2 = { role: 'partner', label: 'C', track: [[0, Z2[0], Z2[1]]], face: { toPoint: TP } }; }
     return {
-      dur: DUR, kid: k, net: NET, view: { x0: -1.4, x1: 10.4, y0: small ? -1.6 : -2.6, y1: 10.2 }, cam: { el: 52 },
+      dur: DUR, kid: k, net: NET, view: { x0: -1.4, x1: 10.4, y0: small ? -1.6 : -3.8, y1: 10.2 }, cam: { el: 52 },
       label: reto ? 'Drill RC2 Cadena al 4: recibo al colocador y colocación atrapada en el aro de zona 4; se cuentan las cadenas completas de 10 balones.'
                   : 'Drill RC1 Recibe y coloca: el coach lanza, el receptor manda con toque de antebrazos al colocador y el colocador volea alto a la zona 4, donde un compañero atrapa.',
       qz: age === '11-12' ? { hot: 'A', t0: 1.6, t1: TR } : null,
