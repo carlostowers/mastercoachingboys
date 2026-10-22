@@ -12,8 +12,8 @@
    - Si WebGL no está o algo falla, el motor dibuja sus figuras de siempre.
    - Uniformes por equipo: VOLEII.Action.GL.setTeam('vaqueros' | 'plataneros').
 
-   Cuerpos: Microsoft Rocketbox Avatar Library (licencia MIT), Sports_Male_02,
-   03 (camiseta, short y medias) y 04 (sin mangas), con el uniforme repintado.
+   Cuerpos: Microsoft Rocketbox Avatar Library (licencia MIT): cuerpo Sports_Male_04 (sin mangas)
+   con el uniforme repintado y medias blancas a media pierna; cabezas de los modelos 04, 02 y 03.
    Requiere, antes de este archivo: voleii-action.js y three/voleii-three.min.js.
    ===================================================================== */
 (function (root) {
@@ -23,16 +23,18 @@
   var A = VO.Action;
   if (!A || !VO.T3) { if (root.console) { console.warn('voleii-action-3d: falta voleii-action.js o voleii-three.min.js'); } return; }
   var T3 = VO.T3, THREE = T3.THREE;
-  var G = A.GL = { ready: false, failed: false, version: '1.0.0' };
+  var G = A.GL = { ready: false, failed: false, version: '1.1.0' };
 
   /* ======================= UNIFORMES ======================= */
+  /* medias: siempre blancas y a media pierna (las pinta la máscara del cuerpo); pantalón blanco o verde, nunca negro */
   var KITS = {
-    azul: { jersey: '#0E2A63', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#FFCF28' },
-    blanco: { jersey: '#EEF1F5', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#0E2A63' },
-    verde: { jersey: '#2FA62B', shorts: '#F1F3F6', socks: '#2FA62B', trim: '#F7E811' },
-    blancoVerde: { jersey: '#EEF1F5', shorts: '#2FA62B', socks: '#F1F3F6', trim: '#2FA62B' },
-    staff: { jersey: '#4A5568', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#D5DBE3' }
+    azul: { jersey: '#0E2A63', shorts: '#F1F3F6', trim: '#FFCF28' },
+    blanco: { jersey: '#EEF1F5', shorts: '#F1F3F6', trim: '#0E2A63' },
+    verde: { jersey: '#2FA62B', shorts: '#F1F3F6', trim: '#F7E811' },
+    blancoVerde: { jersey: '#EEF1F5', shorts: '#2FA62B', trim: '#2FA62B' },
+    staff: { jersey: '#4A5568', shorts: '#F1F3F6', trim: '#D5DBE3' }
   };
+  var SOCKS = '#F4F6F9';
   /* qué uniforme lleva cada papel de la escena (en Vaqueros el que trabaja va de blanco: se ve mejor sobre la cancha azul) */
   var TEAMS = {
     vaqueros: { player: 'blanco', partner: 'azul', target: 'azul', coach: 'staff', rival: 'verde' },
@@ -40,16 +42,20 @@
   };
   G.KITS = KITS; G.TEAMS = TEAMS; G.team = 'vaqueros';
   /* cámara de la vista 3D real: inclinación (grados), distancia (1 = la del motor) y margen alrededor de la acción (m) */
-  G.cam = { el: 30, dist: 0.6, pad: 1.0, follow: false };
-  /* follow: la cámara sigue la jugada (balón, de dónde sale y a dónde va, y el que trabaja); false = cámara fija */
+  G.cam = { el: 30, dist: 0.6, pad: 1.0 };
 
   /* ======================= CUERPOS ======================= */
-  var MODELS = [
-    { id: 'm02', body: 'A', tint: true },
-    { id: 'm03', body: 'A', tint: false, hair: true },
-    { id: 'm04', body: 'B', tint: true }
+  /* Todos con el cuerpo B (camiseta sin mangas, Sports_Male_04). Para que no sean todos iguales, tres cabezas
+     (04, 02 y 03) y tonos de piel; el tono del cuerpo se ajusta al de la cabeza. */
+  var BODYM = { id: 'm04' };
+  var HEADS = { m04: { id: 'm04', own: true }, m02: { id: 'm02', file: 'm02_head' }, m03: { id: 'm03', file: 'm03_head', hair: true } };
+  var LOOKS = [
+    { head: 'm04', body: [1, 1, 1], face: [1, 1, 1] },
+    { head: 'm03', body: [0.69, 0.57, 0.43], face: [1, 1, 1] },
+    { head: 'm02', body: [0.96, 0.94, 0.9], face: [1, 1, 1] },
+    { head: 'm04', body: [0.84, 0.73, 0.63], face: [0.84, 0.73, 0.63] },
+    { head: 'm02', body: [0.8, 0.69, 0.58], face: [0.84, 0.74, 0.64] }
   ];
-  var SKIN_TONES = [[1, 1, 1], [0.9, 0.8, 0.71], [0.72, 0.58, 0.47]];
   var REF_H = 180.5;            /* estatura del modelo en sus unidades (cm) */
   var BODY_H = 1.6;             /* estatura en metros de una figura de escala 1 */
   var BN = {
@@ -85,21 +91,33 @@
       }, undefined, rej);
     });
   }
-  function loadModel(m) {
-    var jobs = [], base = G.base + m.id;
-    m.tex = {};
-    jobs.push(new Promise(function (res, rej) {
+  function loadGLB(url) {
+    return new Promise(function (res, rej) {
       var gl = new T3.GLTFLoader();
       gl.setMeshoptDecoder(T3.MeshoptDecoder);
-      gl.load(base + '.glb', function (g) { m.gltf = g; res(); }, undefined, rej);
-    }));
+      gl.load(url, res, undefined, rej);
+    });
+  }
+  function loadBody(m) {
+    var jobs = [], base = G.base + m.id;
+    m.tex = {};
+    jobs.push(loadGLB(base + '.glb').then(function (g) { m.gltf = g; }));
     [['body', '_body.jpg', true], ['bodyN', '_body_n.jpg', false], ['mask', '_mask.png', false], ['head', '_head.jpg', true], ['headN', '_head_n.jpg', false]].forEach(function (x) {
       jobs.push(loadTexture(base + x[1], x[2]).then(function (t) { m.tex[x[0]] = t; }));
     });
-    if (m.hair) { jobs.push(loadTexture(base + '_hair.png', true).then(function (t) { m.tex.hair = t; })); }
     return Promise.all(jobs);
   }
-  function prepModel(m) {
+  function loadHead(h) {
+    if (h.own) { return Promise.resolve(); }
+    var jobs = [], base = G.base + h.id;
+    h.tex = {};
+    jobs.push(loadGLB(G.base + h.file + '.glb').then(function (g) { h.gltf = g; }));
+    jobs.push(loadTexture(base + '_head.jpg', true).then(function (t) { h.tex.head = t; }));
+    jobs.push(loadTexture(base + '_head_n.jpg', false).then(function (t) { h.tex.headN = t; }));
+    if (h.hair) { jobs.push(loadTexture(base + '_hair.png', true).then(function (t) { h.tex.hair = t; })); }
+    return Promise.all(jobs);
+  }
+  function prepBody(m) {
     var sc = m.gltf.scene, bones = {}, byNorm = {};
     sc.updateMatrixWorld(true);
     sc.traverse(function (o) { if (o.isBone) { byNorm[normName(o.name)] = o; } });
@@ -115,13 +133,21 @@
     };
     m.scene = sc;
   }
+  function prepHead(h) {
+    if (h.own) { return; }
+    h.meshes = [];
+    h.gltf.scene.updateMatrixWorld(true);
+    h.gltf.scene.traverse(function (o) { if (o.isSkinnedMesh) { h.meshes.push(o); } });
+  }
   function start() {
     if (G.loading || G.ready) { return; }
     G.loading = true;
     try {
       if (!webglOK()) { G.failed = true; return; }
-      Promise.all(MODELS.map(loadModel)).then(function () {
-        MODELS.forEach(prepModel);
+      var heads = Object.keys(HEADS).map(function (k) { return HEADS[k]; });
+      Promise.all([loadBody(BODYM)].concat(heads.map(loadHead))).then(function () {
+        prepBody(BODYM);
+        heads.forEach(prepHead);
         G.ready = true;
         A.refresh();
       }).catch(function (err) {
@@ -162,10 +188,11 @@
     return {
       kitMask: { value: m.tex.mask },
       kJersey: { value: new THREE.Color() }, kShorts: { value: new THREE.Color() },
-      kSocks: { value: new THREE.Color() }, kTrim: { value: new THREE.Color() },
+      kSocks: { value: new THREE.Color(SOCKS) }, kTrim: { value: new THREE.Color() },
       kSkin: { value: new THREE.Vector3(1, 1, 1) }, kDim: { value: 1 }
     };
   }
+  function skinUniforms() { return { kSkin: { value: new THREE.Vector3(1, 1, 1) }, kDim: { value: 1 } }; }
   function patch(mat, u, frag, key) {
     mat.onBeforeCompile = function (sh) {
       var k;
@@ -177,44 +204,64 @@
     mat.customProgramCacheKey = function () { return key; };
     return mat;
   }
-  function materialFor(m, name, u) {
+  function headMaterial(h, name, uh) {
     if (name === 'hair') {
-      return new THREE.MeshStandardMaterial({ map: m.tex.hair, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.85, metalness: 0 });
+      return new THREE.MeshStandardMaterial({ map: h.tex.hair, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.85, metalness: 0 });
     }
-    if (name === 'head') {
-      return patch(new THREE.MeshStandardMaterial({ map: m.tex.head, normalMap: m.tex.headN, roughness: 0.62, metalness: 0 }), u, SKIN_FRAG, 'voleii-skin');
-    }
+    return patch(new THREE.MeshStandardMaterial({ map: h.tex.head, normalMap: h.tex.headN, roughness: 0.62, metalness: 0 }), uh, SKIN_FRAG, 'voleii-skin');
+  }
+  function bodyMaterial(m, u) {
     return patch(new THREE.MeshStandardMaterial({ map: m.tex.body, normalMap: m.tex.bodyN, roughness: 0.74, metalness: 0 }), u, KIT_FRAG, 'voleii-kit');
   }
   function setKit(inst, kitName) {
     var K = KITS[kitName] || KITS.blanco, u = inst.u;
-    u.kJersey.value.set(K.jersey); u.kShorts.value.set(K.shorts); u.kSocks.value.set(K.socks); u.kTrim.value.set(K.trim);
+    u.kJersey.value.set(K.jersey); u.kShorts.value.set(K.shorts); u.kTrim.value.set(K.trim);
     inst.kit = kitName;
   }
 
   /* ======================= UN JUGADOR ======================= */
-  function chooseModel(id, role) {
-    var h = hashId(id);
-    if (role === 'coach') { return MODELS[h % 2]; }
-    return MODELS[h % MODELS.length];
-  }
   function makeAvatar(S, id, role) {
-    var m = chooseModel(id, role), obj = T3.cloneSkinned(m.scene);
-    var inst = { m: m, obj: obj, group: new THREE.Group(), bones: {}, rest: [], mats: [], u: kitUniforms(m), role: role };
-    var byNorm = {};
+    /* las caras se reparten en orden para que no se repitan seguidas */
+    S.nLook = (S.nLook || 0) + 1;
+    var m = BODYM, obj = T3.cloneSkinned(m.scene), look = LOOKS[(S.nLook * 2 + hashId(S.sc.label || '')) % LOOKS.length];
+    if (role === 'coach') { look = LOOKS[hashId(id) % 2 ? 0 : 2]; }
+    var hd = HEADS[look.head] || HEADS.m04;
+    var inst = { m: m, obj: obj, group: new THREE.Group(), bones: {}, rest: [], mats: [], u: kitUniforms(m), uh: skinUniforms(), role: role };
+    var byNorm = {}, bodyParent = null, ownHeads = [];
     obj.traverse(function (o) {
       if (o.isBone) { inst.rest.push([o, o.position.clone(), o.quaternion.clone(), o.scale.clone()]); byNorm[normName(o.name)] = o; }
-      if (o.isMesh) {
-        var mat = materialFor(m, o.material && o.material.name, inst.u);
-        o.material = mat; inst.mats.push(mat);
-        o.castShadow = !(o.material && o.material.alphaTest > 0);
-        o.receiveShadow = false;
-        o.frustumCulled = false;
-      }
     });
+    obj.traverse(function (o) {
+      if (!o.isMesh) { return; }
+      var nm = o.material && o.material.name;
+      o.receiveShadow = false; o.frustumCulled = false; o.castShadow = true;
+      if (nm === 'head' || nm === 'hair') {
+        if (!hd.own) { ownHeads.push(o); return; }
+        o.material = headMaterial(m, nm, inst.uh);
+      } else {
+        o.material = bodyMaterial(m, inst.u); bodyParent = o.parent;
+      }
+      inst.mats.push(o.material);
+    });
+    /* otra cabeza: se monta en el esqueleto de este cuerpo (mismo esqueleto de Rocketbox) */
+    if (!hd.own) {
+      ownHeads.forEach(function (o) { o.visible = false; });
+      hd.meshes.forEach(function (src) {
+        var nm = src.material && src.material.name, mat = headMaterial(hd, nm, inst.uh);
+        var me = new THREE.SkinnedMesh(src.geometry, mat);
+        var bones = src.skeleton.bones.map(function (b) { return byNorm[normName(b.name)]; });
+        if (bones.some(function (b) { return !b; })) { return; }
+        var sk = new THREE.Skeleton(bones, src.skeleton.boneInverses.map(function (x) { return x.clone(); }));
+        me.position.copy(src.position); me.quaternion.copy(src.quaternion); me.scale.copy(src.scale);
+        (bodyParent || obj).add(me);
+        me.bind(sk, src.bindMatrix.clone());
+        me.frustumCulled = false; me.castShadow = nm !== 'hair'; me.receiveShadow = false;
+        inst.mats.push(mat);
+      });
+    }
     Object.keys(BN).forEach(function (k) { inst.bones[k] = byNorm[normName(BN[k])]; });
-    var tone = m.tint ? SKIN_TONES[hashId(id + 'piel') % SKIN_TONES.length] : [1, 1, 1];
-    inst.u.kSkin.value.set(tone[0], tone[1], tone[2]);
+    inst.u.kSkin.value.set(look.body[0], look.body[1], look.body[2]);
+    inst.uh.kSkin.value.set(look.face[0], look.face[1], look.face[2]);
     setKit(inst, (TEAMS[S.team] || TEAMS.vaqueros)[role] || 'blanco');
     inst.group.add(obj);
     S.scene.add(inst.group);
@@ -345,7 +392,7 @@
       var fp = wpos(ft, new V3());
       aim(ft, to, fp.clone().add(fdir));
     }
-    inst.u.kDim.value = dim || 1;
+    inst.u.kDim.value = dim || 1; inst.uh.kDim.value = dim || 1;
   }
 
   /* ======================= ESCENA DE UN DIAGRAMA ======================= */
@@ -521,10 +568,6 @@
     rd.render(S.scene, S.camera);
     R.ctx.drawImage(rd.domElement, 0, 0, R.W, R.H);
     return true;
-  };
-  G.setFollow = function (on) {
-    G.cam.follow = !!on;
-    A.refresh();
   };
   G.setTeam = function (name) {
     if (!TEAMS[name]) { return; }

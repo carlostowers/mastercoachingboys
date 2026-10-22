@@ -459,7 +459,7 @@
       if (it.label) {
         /* en la vista 3D real el rótulo va al lado del target, para no tapar a los que están delante */
         var sd = it.p[0] > 6 ? -1 : 1;
-        q = this.hideDims ? this.P(it.p[0] + sd * (it.r + 1.05), it.p[1], 0) : this.P(it.p[0], it.p[1] + it.r + 0.34, 0);
+        q = this.hideDims ? this.P(it.p[0] + sd * (it.r + 1.0), it.p[1] - it.r - 0.35, 0) : this.P(it.p[0], it.p[1] + it.r + 0.34, 0);
         this.pill(q.x, q.y, it.label, { size: clamp(k * 0.24, 9, 12), color: COL.gold, border: COL.gold, z: -1, a: it.labA == null ? 1 : it.labA });
       }
     } else if (it.k === 'zone') {
@@ -748,10 +748,10 @@
   /* ¿se dibuja con la capa 3D real? */
   DP.can3d = function () { var GL = A.GL; return !!(GL && GL.ready && this.gl3d !== false); };
   DP.aspectGoal = function () { return this.viewGoal > 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, this.viewGoal > 0.5 ? 1 : 0); };
-  /* encuadre de la vista 3D real: la región donde pasa la acción (jugadores, filas, aros, balón), con la cancha a lo ancho */
+  /* encuadre de la vista 3D real: la región donde pasa la acción (jugadores, filas, aros, balón), con la cancha completa de nuestro lado */
   DP.frame3d = function () {
     var sc = this.sc, G = A.GL || {}, gc = G.cam || {}, sv = sc.view, i, j;
-    if (this.f3 && this.f3.sc === sc && this.f3.el === gc.el && this.f3.dist === gc.dist && this.f3.pad === gc.pad && this.f3.fw === gc.fullWidth) { return this.f3.fr; }
+    if (this.f3 && this.f3.sc === sc && this.f3.el === gc.el && this.f3.dist === gc.dist && this.f3.pad === gc.pad) { return this.f3.fr; }
     var xs = [], ys = [];
     function add2(p) { if (p && isFinite(p[0]) && isFinite(p[1])) { xs.push(p[0]); ys.push(p[1]); } }
     var ids = Object.keys(sc.actors);
@@ -771,53 +771,11 @@
       R.x0 = Math.max(sv.x0, Math.min.apply(null, xs) - pad); R.x1 = Math.min(sv.x1, Math.max.apply(null, xs) + pad);
       R.y0 = Math.max(sv.y0, Math.min.apply(null, ys) - pad); R.y1 = Math.min(sv.y1, Math.max.apply(null, ys) + pad);
     }
-    if (sc.court !== 'floor' && gc.fullWidth) { R.x0 = Math.min(R.x0, -0.3); R.x1 = Math.max(R.x1, 9.3); }
+    /* la cancha completa a lo ancho y nuestra zona zaguera hasta la línea de fondo (no se corta) */
+    if (sc.court !== 'floor') { R.x0 = Math.min(R.x0, -0.35); R.x1 = Math.max(R.x1, 9.35); R.y1 = Math.max(R.y1, Math.min(sv.y1, 9.35)); }
     var fr = { R: R, cam: { el: gc.el || 30, az: (sc.cam && sc.cam.az) || 0, dist: gc.dist || 0.6 } };
-    this.f3 = { sc: sc, el: gc.el, dist: gc.dist, pad: gc.pad, fw: gc.fullWidth, fr: fr };
+    this.f3 = { sc: sc, el: gc.el, dist: gc.dist, pad: gc.pad, fr: fr };
     return fr;
-  };
-  /* cámara que sigue la jugada: encuadra el balón, de dónde sale y a dónde va, y al que trabaja (aro dorado);
-     se suaviza en el tiempo (antes y después de t) para que no brinque */
-  DP.actionBox = function (t) {
-    var sc = this.sc, xs = [], ys = [], i, j, L;
-    function add2(p) { if (p && isFinite(p[0]) && isFinite(p[1])) { xs.push(p[0]); ys.push(p[1]); } }
-    for (L = 0; L < this.lists.length; L++) {
-      var segs = this.lists[L], b = this.ballAt(segs, t);
-      if (!b) { continue; }
-      add2(b.pos);
-      if (b.seg && b.seg.type === 'fly') { add2(b.seg.a); add2(b.seg.b); }
-      if (b.seg && b.seg.type === 'hold' && b.seg.who) { add2(this.actorPos(b.seg.who, t)); }
-    }
-    var ids = Object.keys(sc.actors);
-    for (i = 0; i < ids.length; i++) {
-      var a = sc.actors[ids[i]], hi = 0;
-      if (a.hi) { for (j = 0; j < a.hi.length; j++) { hi = Math.max(hi, fade(t, a.hi[j][0], a.hi[j][1], 0.2, 0.2)); } }
-      if (hi > 0.15) { add2(this.actorPos(ids[i], t)); }
-    }
-    if (!xs.length) { return null; }
-    return { x0: Math.min.apply(null, xs), x1: Math.max.apply(null, xs), y0: Math.min.apply(null, ys), y1: Math.max.apply(null, ys) };
-  };
-  DP.followFrame = function (t) {
-    var base = this.frame3d(), G = A.GL || {}, gc = G.cam || {}, B = base.R, k, acc = { x0: 0, x1: 0, y0: 0, y1: 0 }, wsum = 0;
-    var span = gc.smooth || 0.9, dur = this.sc.dur;
-    for (k = -6; k <= 6; k++) {
-      var tt = t + span * k / 6, w = 1 - Math.abs(k) / 7;
-      if (tt < 0) { tt += dur; } if (tt > dur) { tt -= dur; }
-      var bx = this.actionBox(tt);
-      if (!bx) { continue; }
-      acc.x0 += bx.x0 * w; acc.x1 += bx.x1 * w; acc.y0 += bx.y0 * w; acc.y1 += bx.y1 * w; wsum += w;
-    }
-    if (!wsum) { return base; }
-    var R = { x0: acc.x0 / wsum, x1: acc.x1 / wsum, y0: acc.y0 / wsum, y1: acc.y1 / wsum };
-    var pad = gc.followPad == null ? 1.6 : gc.followPad, minW = gc.minW || 6.5, minD = gc.minD || 5.5;
-    R.x0 -= pad; R.x1 += pad; R.y0 -= pad; R.y1 += pad;
-    var cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2;
-    if (R.x1 - R.x0 < minW) { R.x0 = cx - minW / 2; R.x1 = cx + minW / 2; }
-    if (R.y1 - R.y0 < minD) { R.y0 = cy - minD / 2; R.y1 = cy + minD / 2; }
-    /* dentro del encuadre fijo */
-    function fitIn(a0, a1, b0, b1) { var w2 = Math.min(a1 - a0, b1 - b0); if (a0 < b0) { a0 = b0; a1 = b0 + w2; } if (a1 > b1) { a1 = b1; a0 = b1 - w2; } return [a0, a1]; }
-    var fx = fitIn(R.x0, R.x1, B.x0, B.x1), fy = fitIn(R.y0, R.y1, B.y0, B.y1);
-    return { R: { x0: fx[0], x1: fx[1], y0: fy[0], y1: fy[1] }, cam: base.cam };
   };
   DP.actorPos = function (id, t) { var a = this.sc.actors[id]; return a ? samplePos(a.track, t) : [0, 0]; };
   DP.faceAngle = function (id, t, pos) {
@@ -1333,7 +1291,7 @@
         if (this.viewGoal > 0.5) { this.cv.style.aspectRatio = this.aspectGoal().toFixed(3); R.resize(); }
       }
       R.hideDims = use3d;
-      R.setView(this.view, sc, use3d ? (A.GL.cam && A.GL.cam.follow ? this.followFrame(t) : this.frame3d()) : null);
+      R.setView(this.view, sc, use3d ? this.frame3d() : null);
       c.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       c.clearRect(0, 0, R.W, R.H);
       c.fillStyle = COL.bg; c.fillRect(0, 0, R.W, R.H);

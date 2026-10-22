@@ -338,10 +338,6 @@ body[data-ses="2"] .s1-only{display:none !important}
         <button type="button" class="p3-btn" data-team="vaqueros" aria-pressed="true">Vaqueros</button>
         <button type="button" class="p3-btn" data-team="plataneros" aria-pressed="false">Plataneros</button>
       </div>
-      <div class="p3-grp" role="group" aria-label="Cámara"><span>Cámara</span>
-        <button type="button" class="p3-btn" data-follow="0" aria-pressed="true">Fija</button>
-        <button type="button" class="p3-btn" data-follow="1" aria-pressed="false">Sigue la jugada</button>
-      </div>
     </div>
     <div class="p3-state" id="p3-state">Cargando los cuerpos 3D…</div>
   </div>
@@ -399,12 +395,6 @@ body[data-ses="2"] .s1-only{display:none !important}
     for (i = 0; i < ages.length; i++) {
       ages[i].addEventListener('click', function () {
         try { press('.p3-btn[data-age]', this); AC.setAge(this.getAttribute('data-age')); document.body.setAttribute('data-age', this.getAttribute('data-age')); } catch (err) { console.error(err); }
-      });
-    }
-    var cams = document.querySelectorAll('.p3-btn[data-follow]');
-    for (i = 0; i < cams.length; i++) {
-      cams[i].addEventListener('click', function () {
-        try { press('.p3-btn[data-follow]', this); if (AC.GL && AC.GL.setFollow) { AC.GL.setFollow(this.getAttribute('data-follow') === '1'); } } catch (err) { console.error(err); }
       });
     }
     for (i = 0; i < teams.length; i++) {
