@@ -42,7 +42,7 @@
   };
   G.KITS = KITS; G.TEAMS = TEAMS; G.team = 'vaqueros';
   /* cámara de la vista 3D real: inclinación (grados), distancia (1 = la del motor) y margen alrededor de la acción (m) */
-  G.cam = { el: 30, dist: 0.6, pad: 1.0 };
+  G.cam = { el: 30, dist: 1.6, pad: 1.0 };   /* más lejos y con más zoom: la cancha en su proporción real */
 
   /* ======================= CUERPOS ======================= */
   /* Todos con el cuerpo B (camiseta sin mangas, Sports_Male_04). Para que no sean todos iguales, tres cabezas
@@ -466,7 +466,8 @@
     add(new THREE.PlaneGeometry(10, 1.0), new THREE.MeshBasicMaterial({ map: sh.netTex, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }), 4.5, bh + 0.5, 0, false);
     var white = new THREE.MeshStandardMaterial({ color: '#F4F6F9', roughness: 0.55 });
     add(new THREE.BoxGeometry(10, 0.07, 0.012), white, 4.5, h - 0.035, 0, true);
-    add(new THREE.BoxGeometry(10, 0.045, 0.008), white, 4.5, bh + 0.022, 0, false);
+    /* banda de abajo oscura y fina: blanca parecía otra línea de la cancha */
+    add(new THREE.BoxGeometry(10, 0.028, 0.008), new THREE.MeshStandardMaterial({ color: '#1B2433', roughness: 0.6 }), 4.5, bh + 0.014, 0, false);
     var post = new THREE.MeshStandardMaterial({ color: '#6B778A', roughness: 0.4, metalness: 0.35 });
     add(new THREE.CylinderGeometry(0.05, 0.05, h + 0.15, 18), post, -0.9, (h + 0.15) / 2, 0, true);
     add(new THREE.CylinderGeometry(0.05, 0.05, h + 0.15, 18), post, 9.9, (h + 0.15) / 2, 0, true);

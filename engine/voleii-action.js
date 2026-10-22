@@ -26,7 +26,7 @@
 
   var VO = root.VOLEII = root.VOLEII || {};
   var A = VO.Action = VO.Action || {};
-  A.version = '1.1.0';
+  A.version = '2.0.0';
 
   /* ======================= TEMA ======================= */
   var COL = {
@@ -197,7 +197,7 @@
     o = o || {};
     var el = rad(lerp(89.4, o.el || 50, e));
     var cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2, size = Math.max(R.x1 - R.x0, R.y1 - R.y0);
-    var dist = Math.exp(lerp(Math.log(200), Math.log(size * 1.25 + 6), e));
+    var dist = Math.exp(lerp(Math.log(200), Math.log((size * 1.25 + 6) * (o.dist || 1)), e));
     var az = rad((o.az || 0) * e);
     var tg = { x: cx, y: cy + lerp(0, size * 0.05, e), z: lerp(0, 0.4, e) };
     var eye = { x: tg.x + dist * Math.sin(az) * Math.cos(el), y: tg.y + dist * Math.cos(az) * Math.cos(el), z: tg.z + dist * Math.sin(el) };
@@ -236,9 +236,9 @@
     return { s: s, ox: pad.l + (aw - (maxx - minx) * s) / 2 - minx * s, oy: pad.t + (ah - (maxy - miny) * s) / 2 - miny * s, w: maxx - minx, h: maxy - miny };
   }
   /* proporción de la imagen para una escena (ancho / alto) en la vista 3D */
-  function aspectFor(sc, e) {
+  function aspectFor(sc, e, fr) {
     e = e === undefined ? 1 : e;
-    var R = sc.view, cam = camera(e, R, sc.cam), f = fitFor(cam, boundsPts(R, e, sc.net ? sc.net.h : 0), 1000, 1000, { l: 0, r: 0, t: 0, b: 0 });
+    var R = fr ? fr.R : sc.view, cam = camera(e, R, fr ? fr.cam : sc.cam), f = fitFor(cam, boundsPts(R, e, sc.net ? sc.net.h : 0), 1000, 1000, { l: 0, r: 0, t: 0, b: 0 });
     return clamp(f.w / f.h, e < 0.5 ? 0.4 : 0.62, 1.9);
   }
   A.camera = camera;
@@ -262,13 +262,15 @@
       this.cv.width = Math.round(w * dpr); this.cv.height = Math.round(h * dpr);
     }
   };
-  RP.setView = function (v, sc) {
+  /* fr: encuadre { R: región, cam: { el, az, dist } }; si no se da, el de la escena */
+  RP.setView = function (v, sc, fr) {
+    var VR = fr ? fr.R : sc.view, CO = fr ? fr.cam : sc.cam;
     this.e = ease(v);
-    this.cam = camera(this.e, sc.view, sc.cam);
+    this.cam = camera(this.e, VR, CO);
     var nh = sc.net ? sc.net.h : 0;
-    var fa = fitFor(camera(0, sc.view, sc.cam), boundsPts(sc.view, 0, nh), this.W, this.H, this.pad);
-    var fb = fitFor(camera(1, sc.view, sc.cam), boundsPts(sc.view, 1, nh), this.W, this.H, this.pad);
-    var fc = fitFor(this.cam, boundsPts(sc.view, this.e, nh), this.W, this.H, this.pad);
+    var fa = fitFor(camera(0, VR, CO), boundsPts(VR, 0, nh), this.W, this.H, this.pad);
+    var fb = fitFor(camera(1, VR, CO), boundsPts(VR, 1, nh), this.W, this.H, this.pad);
+    var fc = fitFor(this.cam, boundsPts(VR, this.e, nh), this.W, this.H, this.pad);
     /* transición suave: en los extremos se usa el encuadre exacto */
     this.fit = this.e <= 0.001 ? fa : (this.e >= 0.999 ? fb : fc);
   };
@@ -324,6 +326,7 @@
     for (i = 0; i < list.length; i++) {
       p = list[i];
       if (p.a <= 0.01) { continue; }
+      if (p.x < -40 || p.x > this.W + 40 || p.y < -40 || p.y > this.H + 40) { continue; }
       c.save(); c.globalAlpha = p.a;
       c.font = '700 ' + p.size + 'px ' + FONT;
       w = c.measureText(p.text).width + p.size * 1.0; h = p.size + 8; r = h / 2;
@@ -402,7 +405,7 @@
     var k0 = this.ppm(4.5, 4.5, 0), p3 = this.P(-0.55, 3, 0);
     c.font = '700 ' + clamp(k0 * 0.26, 8, 12) + 'px ' + FONT;
     c.fillStyle = 'rgba(185,196,216,0.7)'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    if (R.x0 < -0.6) { c.fillText('3 m', p3.x, p3.y); }
+    if (R.x0 < -0.6 && !this.hideDims) { c.fillText('3 m', p3.x, p3.y); }
     c.restore();
   };
   RP.drawNet = function (sc) {
@@ -453,7 +456,12 @@
       this.path(pts); c.closePath(); c.fillStyle = rgba(COL.gold, 0.15); c.fill();
       k = this.ppm(it.p[0], it.p[1], 0);
       c.setLineDash([7, 5]); c.lineWidth = Math.max(2, k * 0.05); c.strokeStyle = COL.gold; c.stroke(); c.setLineDash([]);
-      if (it.label) { q = this.P(it.p[0], it.p[1] + it.r + 0.34, 0); this.pill(q.x, q.y, it.label, { size: clamp(k * 0.24, 9, 12), color: COL.gold, border: COL.gold, z: -1, a: it.labA == null ? 1 : it.labA }); }
+      if (it.label) {
+        /* en la vista 3D real el rótulo va al lado del target, para no tapar a los que están delante */
+        var sd = it.p[0] > 6 ? -1 : 1;
+        q = this.hideDims ? this.P(it.p[0] + sd * (it.r + 1.0), it.p[1] - it.r - 0.35, 0) : this.P(it.p[0], it.p[1] + it.r + 0.34, 0);
+        this.pill(q.x, q.y, it.label, { size: clamp(k * 0.24, 9, 12), color: COL.gold, border: COL.gold, z: -1, a: it.labA == null ? 1 : it.labA });
+      }
     } else if (it.k === 'zone') {
       this.poly([[it.x, it.y, 0.01], [it.x + it.w, it.y, 0.01], [it.x + it.w, it.y + it.h, 0.01], [it.x, it.y + it.h, 0.01]], rgba(COL.gold, 0.13));
       c.setLineDash([8, 6]);
@@ -646,7 +654,33 @@
     sc.items = [];
     var F = floorRecorder(sc.items);
     if (sc.bg) { sc.bg(F); }
+    scaleFigures(sc, A.state.figScale || 1);
     return sc;
+  }
+  /* figuras más grandes que el tamaño real (por ejemplo 1,15 = 15 % más): crece el cuerpo y, con él,
+     las alturas donde el balón toca las manos y los saltos, para que el balón siga llegando a las manos */
+  function scaleFigures(sc, f) {
+    if (f === 1 || sc.figScaled) { return; }
+    sc.figScaled = f;
+    sc.kid = sc.kid * f;
+    var ids = Object.keys(sc.actors || {}), i, j, L;
+    for (i = 0; i < ids.length; i++) {
+      var a = sc.actors[ids[i]];
+      if (a.role === 'coach') { continue; }          /* el coach es adulto: se queda de su tamaño */
+      if (a.kid) { a.kid *= f; }
+      if (a.jump) { for (j = 0; j < a.jump.length; j++) { if (a.jump[j][2] != null) { a.jump[j][2] *= f; } } }
+    }
+    var lists = sc.balls || (sc.ball ? [sc.ball] : []);
+    for (L = 0; L < lists.length; L++) {
+      for (j = 0; j < lists[L].length; j++) {
+        var g = lists[L][j];
+        if (g.type === 'fly') {
+          var mid = (g.ah + g.bh) / 2;
+          g.ah *= f; g.bh *= f;
+          g.peak += (g.ah + g.bh) / 2 - mid;
+        } else if (g.type === 'hold' && g.h != null) { g.h *= f; }
+      }
+    }
   }
   function floorRecorder(items) {
     return {
@@ -676,7 +710,7 @@
       cv.setAttribute('role', 'img');
       cv.setAttribute('aria-label', sc.label || '');
       cv.style.display = 'block'; cv.style.width = '100%'; cv.style.maxWidth = '100%';
-      cv.style.aspectRatio = aspectFor(sc, this.viewGoal > 0.5 ? 1 : 0).toFixed(3);   /* la vista desde arriba usa una imagen más alta */
+      cv.style.aspectRatio = this.aspectGoal().toFixed(3);   /* la vista desde arriba usa una imagen más alta */
       stage.appendChild(cv);
       this.cv = cv;
       this.R = new Renderer(cv);
@@ -737,6 +771,39 @@
     }
   };
 
+  /* ¿se dibuja con la capa 3D real? */
+  DP.can3d = function () { var GL = A.GL; return !!(GL && GL.ready && this.gl3d !== false); };
+  DP.aspectGoal = function () { return this.viewGoal > 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, this.viewGoal > 0.5 ? 1 : 0); };
+  /* encuadre de la vista 3D real: la región donde pasa la acción (jugadores, filas, aros, balón), con la cancha completa de nuestro lado */
+  DP.frame3d = function () {
+    var sc = this.sc, G = A.GL || {}, gc = G.cam || {}, sv = sc.view, i, j;
+    if (this.f3 && this.f3.sc === sc && this.f3.el === gc.el && this.f3.dist === gc.dist && this.f3.pad === gc.pad) { return this.f3.fr; }
+    var xs = [], ys = [];
+    function add2(p) { if (p && isFinite(p[0]) && isFinite(p[1])) { xs.push(p[0]); ys.push(p[1]); } }
+    var ids = Object.keys(sc.actors);
+    for (i = 0; i < ids.length; i++) { var tr = sc.actors[ids[i]].track || []; for (j = 0; j < tr.length; j++) { add2([tr[j][1], tr[j][2]]); } }
+    for (i = 0; i < sc.items.length; i++) {
+      var it = sc.items[i], r = it.r || 0;
+      if (it.k === 'queue' || it.k === 'cone') { add2(it.p); }
+      else if (it.k === 'hoop' || it.k === 'target') { add2([it.p[0] - r, it.p[1] - r]); add2([it.p[0] + r, it.p[1] + r]); }
+      else if (it.k === 'zone') { add2([it.x, it.y]); add2([it.x + it.w, it.y + it.h]); }
+      else if (it.k === 'line') { add2(it.a); add2(it.b); }
+      else if (it.k === 'label') { var lw = (it.anchor === 'start' || it.anchor === 'end') ? 0.25 : 1.0; add2([it.p[0] - lw, it.p[1] + 0.3]); add2([it.p[0] + lw, it.p[1] + 0.3]); }
+    }
+    var lists = this.lists || [];
+    for (i = 0; i < lists.length; i++) { for (j = 0; j < lists[i].length; j++) { var sg = lists[i][j]; if (sg.type === 'fly') { add2(sg.a); add2(sg.b); } } }
+    var pad = gc.pad == null ? 1.0 : gc.pad;
+    var R = { x0: sv.x0, x1: sv.x1, y0: sv.y0, y1: sv.y1 };
+    if (xs.length) {
+      R.x0 = Math.max(sv.x0, Math.min.apply(null, xs) - pad); R.x1 = Math.min(sv.x1, Math.max.apply(null, xs) + pad);
+      R.y0 = Math.max(sv.y0, Math.min.apply(null, ys) - pad - 0.8); R.y1 = Math.min(sv.y1, Math.max.apply(null, ys) + pad);   /* más margen al fondo: las cabezas del otro lado no se cortan */
+    }
+    /* la cancha completa a lo ancho y nuestra zona zaguera hasta la línea de fondo (no se corta) */
+    if (sc.court !== 'floor') { R.x0 = Math.min(R.x0, -0.35); R.x1 = Math.max(R.x1, 9.35); R.y1 = Math.max(R.y1, Math.min(sv.y1, 9.35)); }
+    var fr = { R: R, cam: { el: gc.el || 30, az: (sc.cam && sc.cam.az) || 0, dist: gc.dist || 1.6 } };
+    this.f3 = { sc: sc, el: gc.el, dist: gc.dist, pad: gc.pad, fr: fr };
+    return fr;
+  };
   DP.actorPos = function (id, t) { var a = this.sc.actors[id]; return a ? samplePos(a.track, t) : [0, 0]; };
   DP.faceAngle = function (id, t, pos) {
     var a = this.sc.actors[id], f = a.face || {};
@@ -1055,6 +1122,22 @@
     c.lineWidth = 1; c.strokeStyle = 'rgba(6,14,32,0.6)'; c.stroke();
   }
 
+  /* aro dorado en el piso del que trabaja */
+  DP.figureRing = function (R, P, alpha, hl, t) {
+    if (!(hl > 0.01)) { return; }
+    var c = R.ctx, k = P.k;
+    var ring = R.circle(P.p[0], P.p[1], 0.006, 0.48 * k + 0.05 * Math.sin(t * 7), 36);
+    c.save(); c.globalAlpha = alpha * hl; R.path(ring); c.closePath(); c.lineWidth = 3; c.strokeStyle = COL.gold; c.shadowColor = COL.gold; c.shadowBlur = 12; c.stroke(); c.restore();
+  };
+  /* etiqueta sobre la cabeza (J, R, CL, CO...) */
+  DP.figureLabel = function (R, P, alpha, a, extra) {
+    if (!a.label) { return; }
+    var cols = roleColors(a.role), k = P.k;
+    var headR = BODY.headR * k * (1 + (1 - Math.min(k, 1)) * 0.35) * 0.9;
+    var hq = R.P(P.head[0], P.head[1], P.head[2] + headR + 0.05 + (extra || 0));
+    var k0 = R.ppm(P.p[0], P.p[1], 0);
+    R.pill(hq.x, hq.y - clamp(k0 * 0.22, 8, 13) - 4, a.label, { size: clamp(k0 * 0.3, 9, 14), color: cols.label, border: a.role === 'player' || a.role === 'target' ? COL.gold : 'rgba(255,255,255,0.75)', a: alpha, z: 1 });
+  };
   DP.drawFigure = function (R, id, P, alpha, opts) {
     var c = R.ctx, a = opts.actor, cols = roleColors(a.role), k = P.k, coach = a.role === 'coach';
     var hsh = hashId(id + (a.label || '')), skin = SKINS[a.skin != null ? a.skin : hsh % SKINS.length], hair = HAIRS[hsh % HAIRS.length];
@@ -1064,10 +1147,7 @@
     /* sombra suave */
     var sh = R.circle(P.p[0] + 0.03, P.p[1] + 0.05, 0.004, 0.3 * k * (1 - Math.min(P.z, 1) * 0.35), 20);
     c.save(); c.globalAlpha = alpha * (0.4 - Math.min(P.z, 1) * 0.2); R.path(sh); c.closePath(); c.fillStyle = '#000'; c.fill(); c.restore();
-    if (opts.hl > 0.01) {
-      var ring = R.circle(P.p[0], P.p[1], 0.006, 0.48 * k + 0.05 * Math.sin(opts.t * 7), 36);
-      c.save(); c.globalAlpha = alpha * opts.hl; R.path(ring); c.closePath(); c.lineWidth = 3; c.strokeStyle = COL.gold; c.shadowColor = COL.gold; c.shadowBlur = 12; c.stroke(); c.restore();
-    }
+    this.figureRing(R, P, alpha, opts.hl, opts.t);
     var legCol = coach ? '#3A4150' : skin[0];
     var shoe = coach ? '#1C2330' : '#F4F6FA';
     /* piernas */
@@ -1125,12 +1205,8 @@
     for (i = 0; i < parts.length; i++) { this.drawPart(R, parts[i], k, cols); }
     c.restore();
     /* etiqueta */
-    var hq = R.P(P.head[0], P.head[1], P.head[2] + headR + 0.05);
-    var k0 = R.ppm(P.p[0], P.p[1], 0);
-    if (a.label && !opts.noLabel) {
-      R.pill(hq.x, hq.y - clamp(k0 * 0.22, 8, 13) - 4, a.label, { size: clamp(k0 * 0.3, 9, 14), color: cols.label, border: a.role === 'player' || a.role === 'target' ? COL.gold : 'rgba(255,255,255,0.75)', a: alpha, z: 1 });
-    }
-    return { top: hq };
+    if (!opts.noLabel) { this.figureLabel(R, P, alpha, a); }
+    return { top: R.P(P.head[0], P.head[1], P.head[2] + headR + 0.05) };
   };
   DP.drawPart = function (R, pr, k, cols) {
     var c = R.ctx;
@@ -1235,13 +1311,21 @@
     try {
       var sc = this.sc, R = this.R, c = R.ctx, ids = Object.keys(sc.actors), i;
       R.resize();
-      R.setView(this.view, sc);
+      /* capa 3D real: cámara más baja y más cerca, encuadre en donde está la acción */
+      var GL = A.GL, use3d = this.view >= 0.5 && this.can3d();
+      if (use3d !== this.was3d) {
+        this.was3d = use3d;
+        try { this.root.classList.toggle('real3d', use3d); } catch (e0) { void e0; }   /* el HTML puede esconder la leyenda de colores en 3D */
+        if (this.viewGoal > 0.5) { this.cv.style.aspectRatio = this.aspectGoal().toFixed(3); R.resize(); }
+      }
+      R.hideDims = use3d;
+      R.setView(this.view, sc, use3d ? this.frame3d() : null);
       c.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       c.clearRect(0, 0, R.W, R.H);
       c.fillStyle = COL.bg; c.fillRect(0, 0, R.W, R.H);
       R.pills = [];
       R.drawFloor(sc);
-      for (i = 0; i < sc.items.length; i++) { if (sc.items[i].k !== 'cone' && sc.items[i].k !== 'queue') { R.drawFloorItem(sc.items[i]); } }
+      for (i = 0; i < sc.items.length; i++) { var fk = sc.items[i].k; if (fk !== 'cone' && fk !== 'queue' && !(use3d && fk === 'feet')) { R.drawFloorItem(sc.items[i]); } }
       if (sc.qz) { R.drawQZ(sc.qz, t); }
       for (i = 0; i < sc.overlays.length; i++) { var ov = sc.overlays[i]; if (ov.type !== 'text') { R.drawOverlay(ov, t); } }
       /* balones y quién los sostiene */
@@ -1255,6 +1339,8 @@
       }
       /* manos sobre el balón que vuela recién soltado se resuelven en gestureAt */
       var ctx = { holds: holds }, items = [], P;
+      /* capa 3D real (voleii-action-3d.js): cuerpos, balón y malla en WebGL; aquí solo se dibuja lo del piso y las etiquetas */
+      var frame = use3d ? { actors: [], queue: [], balls: balls, t: t } : null;
       for (i = 0; i < ids.length; i++) {
         var a = sc.actors[ids[i]];
         P = this.pose(ids[i], t, ctx);
@@ -1263,14 +1349,18 @@
         var al = a.alpha == null ? 1 : a.alpha;
         if (a.inT != null) { al *= clamp((t - a.inT) / 0.35, 0, 1); }
         if (a.outT != null) { al *= clamp((a.outT - t) / 0.35, 0, 1); }
-        items.push({ k: 'a', id: ids[i], P: P, hl: hi, al: al, d: R.P(P.p[0], P.p[1], 0.8).d, y: P.p[1] });
+        if (use3d) { frame.actors.push({ id: ids[i], actor: a, P: P, al: al, hl: hi }); }
+        else { items.push({ k: 'a', id: ids[i], P: P, hl: hi, al: al, d: R.P(P.p[0], P.p[1], 0.8).d, y: P.p[1] }); }
       }
       for (i = 0; i < sc.items.length; i++) {
         var it = sc.items[i];
         if (it.k === 'cone') { items.push({ k: 'cone', p: it.p, d: R.P(it.p[0], it.p[1], 0).d, y: it.p[1] }); }
-        else if (it.k === 'queue') { items.push({ k: 'q', it: it, d: R.P(it.p[0], it.p[1], 0.8).d, y: it.p[1] }); }
+        else if (it.k === 'queue') {
+          if (use3d) { frame.queue.push({ it: it, P: this.queuePose(it) }); }
+          else { items.push({ k: 'q', it: it, d: R.P(it.p[0], it.p[1], 0.8).d, y: it.p[1] }); }
+        }
       }
-      for (i = 0; i < balls.length; i++) { drawBallShadow(R, balls[i]); items.push({ k: 'b', b: balls[i], d: R.P(balls[i].pos[0], balls[i].pos[1], balls[i].pos[2]).d - 0.02, y: balls[i].pos[1] }); }
+      if (!use3d) { for (i = 0; i < balls.length; i++) { drawBallShadow(R, balls[i]); items.push({ k: 'b', b: balls[i], d: R.P(balls[i].pos[0], balls[i].pos[1], balls[i].pos[2]).d - 0.02, y: balls[i].pos[1] }); } }
       this.drawTrails(R, t);
       items.sort(function (m, n) { return n.d - m.d; });
       var self = this, hasNet = !!sc.net;
@@ -1280,8 +1370,24 @@
         else if (itm.k === 'cone') { R.drawCone(itm.p); }
         else if (itm.k === 'q') { self.drawQueue(R, itm.it); }
       }
-      for (i = 0; i < items.length; i++) { if (!hasNet || items[i].y < 0) { drawIt(items[i]); } }
-      if (hasNet) { R.drawNet(sc); for (i = 0; i < items.length; i++) { if (items[i].y >= 0) { drawIt(items[i]); } } }
+      if (use3d) {
+        for (i = 0; i < items.length; i++) { drawIt(items[i]); }
+        for (i = 0; i < frame.actors.length; i++) { this.figureRing(R, frame.actors[i].P, frame.actors[i].al, frame.actors[i].hl, t); }
+        var drawn = false;
+        try { drawn = GL.draw(this, frame, R); } catch (e3) { if (window.console) { console.error('3D', e3); } drawn = false; }
+        if (!drawn) {
+          /* si la capa 3D falla, se dibujan las figuras de siempre */
+          if (hasNet) { R.drawNet(sc); }
+          for (i = 0; i < frame.actors.length; i++) { var fa2 = frame.actors[i]; this.drawFigure(R, fa2.id, fa2.P, fa2.al, { actor: fa2.actor, hl: 0, t: t }); }
+          for (i = 0; i < frame.queue.length; i++) { this.drawQueue(R, frame.queue[i].it); }
+          for (i = 0; i < balls.length; i++) { drawBall(R, balls[i]); }
+        } else {
+          for (i = 0; i < frame.actors.length; i++) { if (frame.actors[i].al > 0.05) { this.figureLabel(R, frame.actors[i].P, frame.actors[i].al, frame.actors[i].actor, 0.08 * frame.actors[i].P.k); } }
+        }
+      } else {
+        for (i = 0; i < items.length; i++) { if (!hasNet || items[i].y < 0) { drawIt(items[i]); } }
+        if (hasNet) { R.drawNet(sc); for (i = 0; i < items.length; i++) { if (items[i].y >= 0) { drawIt(items[i]); } } }
+      }
       for (i = 0; i < sc.overlays.length; i++) { if (sc.overlays[i].type === 'text') { R.drawOverlay(sc.overlays[i], t); } }
       R.flushPills();
       /* pasos */
@@ -1298,8 +1404,8 @@
     }
   };
   /* compañeros que esperan en la fila: figuras quietas, sin etiqueta */
-  DP.drawQueue = function (R, it) {
-    var sc = this.sc, k = sc.kid;
+  DP.queuePose = function (it) {
+    var sc = this.sc;
     var ang = it.face != null ? it.face : (it.p[1] >= 0 ? 0 : 180);
     var fake = { role: it.role, track: [[0, it.p[0], it.p[1]]], face: { angle: ang } };
     var sid = '__q', keep = sc.actors[sid];
@@ -1307,8 +1413,12 @@
     this.gait[sid] = { cum: [0, 0], spd: [0, 0], dt: 1 };
     var P = this.pose(sid, 0, { holds: {} });
     delete sc.actors[sid]; if (keep) { sc.actors[sid] = keep; }
-    void k;
-    this.drawFigure(R, sid, P, 0.5, { actor: fake, hl: 0, t: 0, noLabel: true });
+    P.fake = fake;
+    return P;
+  };
+  DP.drawQueue = function (R, it) {
+    var P = this.queuePose(it);
+    this.drawFigure(R, '__q', P, 0.5, { actor: P.fake, hl: 0, t: 0, noLabel: true });
   };
 
   /* ---------- controles ---------- */
@@ -1334,7 +1444,7 @@
     bSp.addEventListener('click', function () { self.speed = self.speed === 1 ? 0.5 : 1; bSp.textContent = self.speed === 1 ? '1x' : '0.5x'; });
     bV.addEventListener('click', function () {
       self.viewGoal = self.viewGoal > 0.5 ? 0 : 1; syncView();
-      try { if (self.cv && self.sc) { self.cv.style.aspectRatio = aspectFor(self.sc, self.viewGoal).toFixed(3); } } catch (err) { if (window.console) { console.error('vista', err); } }
+      try { if (self.cv && self.sc) { self.cv.style.aspectRatio = self.aspectGoal().toFixed(3); } } catch (err) { if (window.console) { console.error('vista', err); } }
       self.render(self.t);
     });
     rg.addEventListener('input', function () { self.dragging = true; self.t = parseInt(rg.value, 10) / 1000 * self.sc.dur; self.render(self.t); });
@@ -1365,7 +1475,7 @@
   DP.snapshot = function (t, view, dpr, fit) {
     this.playing = false; this.view = view; this.viewGoal = view; this.t = t;
     var keep = this.cv.style.aspectRatio;
-    if (fit) { this.cv.style.aspectRatio = aspectFor(this.sc, view).toFixed(3); }
+    if (fit) { this.cv.style.aspectRatio = (view >= 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, view)).toFixed(3); }
     this.R.forceDpr = dpr || 2.5;
     this.render(t);
     var url = this.cv.toDataURL('image/png');
@@ -1388,6 +1498,7 @@
       var o = opts || {};
       if (o.age) { A.state.age = o.age; }
       if (o.view !== undefined) { A.state.view = o.view; }
+      if (o.figScale) { A.state.figScale = o.figScale; }
       var scope = o.root || document;
       var roots = scope.querySelectorAll(o.selector || '.dia[data-engine="action"]');
       for (var i = 0; i < roots.length; i++) { var d = new Diagram(roots[i]); diagrams.push(d); made.push(d); }
@@ -1408,7 +1519,13 @@
     try { A.state.age = a; for (var k = 0; k < diagrams.length; k++) { diagrams[k].build(); } }
     catch (err) { if (window.console) { console.error('setAge', err); } }
   }
-  A.mount = mount; A.setAge = setAge; A.diagrams = diagrams; A.Diagram = Diagram;
+  /* vuelve a dibujar los diagramas visibles (la capa 3D lo usa cuando termina de cargar) */
+  function refresh() {
+    try { for (var k = 0; k < diagrams.length; k++) { if (diagrams[k].visible && diagrams[k].sc) { diagrams[k].render(diagrams[k].t); } } }
+    catch (err) { if (window.console) { console.error('refresh', err); } }
+  }
+  A.mount = mount; A.setAge = setAge; A.diagrams = diagrams; A.Diagram = Diagram; A.refresh = refresh;
+  A.BODY = BODY;
 
   /* ======================= VISTA LATERAL DE LA CARRERA (de voleii-drills) ======================= */
   var NS = 'http://www.w3.org/2000/svg';

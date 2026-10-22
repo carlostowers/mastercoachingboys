@@ -163,6 +163,7 @@ h1 .g{color:var(--gold)}
 .btn.play{background:var(--gold);color:var(--navy);border-color:var(--gold);min-width:44px;justify-content:center}
 .dia input[type=range]{flex:1;min-width:60px;accent-color:#FFCF28}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--soft)}
+.dia.real3d .legend{display:none}   /* en la vista 3D real los papeles se ven por la etiqueta y el uniforme */
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .lg-dot{width:14px;height:14px;border-radius:50%;display:inline-block}
 .lg-p{background:var(--gold);border:2px solid var(--navy)}
@@ -1487,9 +1488,12 @@ body[data-ses="2"] .s1-only{display:none !important}
 <script src="escenas-sesion1.js"></script>
 <script src="engine/voleii-action.js"></script>
 <script src="escenas-sesion2-action.js"></script>
+<script src="engine/three/voleii-three.min.js"></script>
+<script src="engine/voleii-action-3d.js"></script>
 <script>
 /* Página del plan de práctica: sesión, vista, categoría y secciones.
-   Sesión 1: motor voleii-drills (engine/voleii-drills.js). Sesión 2: motor voleiiaction (engine/voleii-action.js), cancha 3D con figuras. */
+   Sesión 1: motor voleii-drills (engine/voleii-drills.js). Sesión 2: motor voleiiaction (engine/voleii-action.js)
+   con la capa 3D real (engine/voleii-action-3d.js): jugadores con cuerpo humano en la vista 3D; desde arriba, las marcas. */
 (function () {
   'use strict';
   var D = window.VOLEII && window.VOLEII.Drills;
@@ -1546,7 +1550,7 @@ body[data-ses="2"] .s1-only{display:none !important}
     try {
       if (!D) { throw new Error('Falta engine/voleii-drills.js'); }
       D.mount({ age: state.age, selector: '.dia[data-scene]:not([data-engine])' });
-      if (AC) { AC.mount({ age: state.age, view: 1 }); }
+      if (AC) { AC.mount({ age: state.age, view: 1, figScale: 1.15 }); }   /* jugadores 15 % más grandes que el tamaño real */
       document.getElementById('segView').addEventListener('click', function (e) {
         var b = e.target.closest('button'); if (b) { setView(b.getAttribute('data-v')); }
       });
