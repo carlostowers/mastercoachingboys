@@ -232,9 +232,9 @@
     var TP = [TG.p[0], TG.p[1]];
     var REP = 3.6;
     var reps = [
-      { from: 'A1', to: 'B5', lab: 'Pie izq. atrás' },
-      { from: 'A6', to: 'B6', lab: 'Pie izq. atrás' },
-      { from: 'A5', to: 'B1', lab: 'Pie der. atrás' }
+      { from: 'A1', to: 'B5', lab: 'Pie izq. al frente' },
+      { from: 'A6', to: 'B6', lab: 'Pie der. al frente' },
+      { from: 'A5', to: 'B1', lab: 'Pie der. al frente' }
     ];
     var P = { A1: A1, A6: A6, A5: A5, B5: B5, B6: B6, B1: B1 };
     var ball = [], ov = [], phases = [];
@@ -279,7 +279,7 @@
         A1: { role: 'partner', label: 'L', track: [[0, A1[0], A1[1]]], face: { toPoint: B5 } },
         A6: { role: 'partner', label: 'L', track: [[0, A6[0], A6[1]]], face: { toPoint: B6 } },
         A5: { role: 'partner', label: 'L', track: [[0, A5[0], A5[1]]], face: { toPoint: B1 } },
-        B5: recv('B5', 'L'), B6: recv('B6', 'L'), B1: recv('B1', 'R'),
+        B5: recv('B5', 'R'), B6: recv('B6', 'L'), B1: recv('B1', 'L'),   /* pie de atrás: en el 5 el derecho; en el 6 y el 1 el izquierdo */
         T: { role: 'target', label: 'T', track: [[0, TP[0], TP[1]]], face: { toPoint: B6 } }
       },
       ball: ball, overlays: ov, phases: phases
@@ -506,11 +506,22 @@
     };
   }
 
+  /* carreras de ataque (derechos), en metros del diagrama (cancha + 1,2 en x y + 2,2 en y).
+     9–10U: corta y casi derecha. 11–12U: por el 4 arranca por fuera de la lateral y entra en diagonal;
+     por el 2 arranca un poco por fuera y va casi en línea. Los zurdos lo hacen al revés. */
+  function atkLanes(age) {
+    if (age === '11-12') {
+      return { Z4: { S: [0.35, 6.15], J: [2.35, 3.25], q: [[0.35, 6.95], [0.35, 7.7]] }, Z2: { S: [10.4, 6.2], J: [9.45, 3.25], q: [[10.4, 7.0], [10.4, 7.75]] } };
+    }
+    return { Z4: { S: [2.2, 6.3], J: [2.7, 3.35], q: [[2.2, 7.1], [2.2, 7.85]] }, Z2: { S: [9.15, 6.3], J: [8.65, 3.35], q: [[9.15, 7.1], [9.15, 7.85]] } };
+  }
+
   SCENES.a1 = function (age, variant) {
+    var AL = atkLanes(age);
     var lines = [
-      { id: 'Z4', S: [2.4, 9.4], J: [3.1, 3.4], tg: [7.9, 0.8] },
-      { id: 'Z2', S: [9.0, 9.4], J: [8.3, 3.4], tg: [3.5, 0.8] },
-      { id: 'Z6', S: [5.7, 10.9], J: [5.7, 5.9], tg: [5.7, 0.6] }
+      { id: 'Z4', S: AL.Z4.S, J: AL.Z4.J, tg: [7.9, 0.8] },
+      { id: 'Z2', S: AL.Z2.S, J: AL.Z2.J, tg: [3.5, 0.8] },
+      { id: 'Z6', S: [5.7, 9.4], J: [5.7, 5.9], tg: [5.7, 0.6] }
     ];
     var REP = 4.0;
     var times = [0.55, 0.95, 1.3, 1.55], fr = [0.25, 0.55, 0.9, 1.0], sides = [1, -1, 1, -1];
@@ -544,7 +555,7 @@
       W: 11.4, H: 13.4, dur: REP * lines.length,
       label: variant === 'a2' ? 'Drill A2 Cambio de mano: carrera de 4 pasos pasando la bola de tenis de la mano no dominante a la dominante, y lanzamiento por encima de la malla.' : 'Drill A1 Lanza sobre la malla: filas en zonas 4, 2 y 6, carrera de 4 pasos y lanzamiento de la bola de tenis por encima de la malla.',
       bg: attackBg(true, function (g) {
-        queueDots(g, [[1.9, 10.3], [1.6, 11.1], [9.5, 10.3], [9.8, 11.1], [5.7, 11.75], [5.7, 12.5]]);
+        queueDots(g, AL.Z4.q.concat(AL.Z2.q, [[5.7, 10.2], [5.7, 10.95]]));
         smallLabel(g, 0.3, 13.0, 'FILAS 4 · 2 · 6', { size: 13, anchor: 'start', fill: '#FFFFFF', ls: 1.5 });
       }),
       actors: actors, ball: ball, overlays: ov, phases: phases,
@@ -592,10 +603,10 @@
   };
 
   SCENES.a4 = function (age) {
-    var CO = [6.6, 3.8];
+    var CO = [6.6, 3.8], AL = atkLanes(age);
     var lines = [
-      { id: 'Z4', S: [2.1, 9.2], J: [3.1, 3.4], tg: [7.9, 0.8] },
-      { id: 'Z2', S: [9.3, 9.2], J: [8.3, 3.4], tg: [3.5, 0.8] }
+      { id: 'Z4', S: AL.Z4.S, J: AL.Z4.J, tg: [7.9, 0.8] },
+      { id: 'Z2', S: AL.Z2.S, J: AL.Z2.J, tg: [3.5, 0.8] }
     ];
     var REP = 4.0;
     var times = [0.85, 1.25, 1.6, 1.85], fr = [0.25, 0.55, 0.9, 1.0], sides = [1, -1, 1, -1];
@@ -628,7 +639,7 @@
       W: 11.4, H: 13.4, dur: REP * lines.length,
       label: 'Drill A4 Lanza el coach: el coach lanza desde la zona 3 y el jugador hace la carrera de 4 pasos y ataca.',
       bg: attackBg(true, function (g) {
-        queueDots(g, [[1.7, 10.1], [1.4, 10.9], [9.7, 10.1], [10.0, 10.9]]);
+        queueDots(g, AL.Z4.q.concat(AL.Z2.q));
         smallLabel(g, 0.3, 13.0, 'FILAS 4 · 2 · COACH EN 3', { size: 13, anchor: 'start', fill: '#FFFFFF', ls: 1.5 });
       }),
       actors: actors, ball: ball, overlays: ov, phases: phases

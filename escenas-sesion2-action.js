@@ -56,7 +56,7 @@
     var A1 = [1.5, -3.6], A6 = [4.5, -3.6], A5 = [7.5, -3.6];
     var B5 = [1.5, 5.4], B6 = [4.5, 5.4], B1 = [7.5, 5.4];
     var TG = tgt(age), TP = TG.p, REP = 3.6;
-    var reps = [{ from: 'A1', to: 'B5', lab: 'Pie izq. atrás' }, { from: 'A6', to: 'B6', lab: 'Pie izq. atrás' }, { from: 'A5', to: 'B1', lab: 'Pie der. atrás' }];
+    var reps = [{ from: 'A1', to: 'B5', lab: 'Pie izq. al frente' }, { from: 'A6', to: 'B6', lab: 'Pie der. al frente' }, { from: 'A5', to: 'B1', lab: 'Pie der. al frente' }];
     var P = { A1: A1, A6: A6, A5: A5, B5: B5, B6: B6, B1: B1 };
     var ball = [], ov = [], phases = [], platBy = { B5: [], B6: [], B1: [] }, hiBy = { B5: [], B6: [], B1: [] };
     for (var i = 0; i < reps.length; i++) {
@@ -89,7 +89,7 @@
       },
       actors: {
         A1: lanz('A1', B5), A6: lanz('A6', B6), A5: lanz('A5', B1),
-        B5: recv('B5', 'L'), B6: recv('B6', 'L'), B1: recv('B1', 'R'),
+        B5: recv('B5', 'R'), B6: recv('B6', 'L'), B1: recv('B1', 'L'),   /* feet = pie de atrás: en el 5 el derecho (izquierdo al frente); en el 6 y el 1 el izquierdo */
         T: { role: 'target', label: 'T', track: [[0, TP[0], TP[1] + 0.1]], face: { toPoint: B6 } }
       },
       ball: ball, overlays: ov, phases: phases
@@ -103,7 +103,7 @@
     var SV = [4.5, -FT[f]];
     var ry = age === '7-8' ? 4.4 : 5.4;
     var R = { R5: [1.5, ry], R6: [4.5, ry], R1: [7.5, ry] };
-    var TG = tgt(age), TP = TG.p, CO = [9.5, 3.4];
+    var TG = tgt(age), TP = TG.p, CO = [6.6, -3.4];   /* coach del otro lado de la malla: el balón llega de frente, como un saque */
     var REP = 3.8, REP3 = 5.0, ROT = 2.6;
     var T2 = 2 * REP, TR = T2 + REP3, DUR = TR + ROT;
     var b1 = [], b2 = [], ov = [], phases = [], gest = [];
@@ -121,6 +121,7 @@
       hi[id].push([T, T + REP]);
       ov.push({ type: 'line', t0: T, t1: T + 1.95, from: SV, to: r });
       ov.push({ type: 'text', t0: T + 0.8, t1: T + 1.9, at: [r[0], r[1] + 1.3], text: 'Detrás del balón', tone: 'gold' });
+      ov.push({ type: 'text', t0: T + 0.8, t1: T + 1.9, at: [r[0], r[1] + 2.1], text: id === 'R5' ? 'Pie izq. al frente' : 'Pie der. al frente', tone: 'white' });
       ov.push({ type: 'text', t0: T + 1.95, t1: T + 2.8, at: [r[0], r[1] + 1.3], text: 'Pausa', tone: 'white' });
       ov.push({ type: 'ring', t0: T + 3.0, t1: T + 3.5, at: TP, r: 0.5 });
       if (reto) { counter(T + 3.0, T + REP); }
@@ -135,8 +136,9 @@
     b1.push(ballHide(T2 + 2.35, DUR - 0.6));
     b1.push(ballHold('SV', DUR - 0.6, DUR, { h: H.hold, fin: 0.3 }));
     var rc1 = toward(r1, CO, 0.45 * k), tp1 = catchPt(rc1);
-    b2.push(ballHold('CO', 0, T2 + 1.6, { h: 1.1 }));
-    b2.push(ballFly(T2 + 1.6, T2 + 2.6, toward(CO, r1, 0.4), 1.1, rc1, H.plat, 3.0));
+    b2.push(ballHold('CO', 0, T2 + 1.25, { h: 1.1 }));
+    b2.push(ballHold('CO', T2 + 1.25, T2 + 1.6, { h: 1.95 }));
+    b2.push(ballFly(T2 + 1.6, T2 + 2.6, toward(CO, r1, 0.25), 1.95, rc1, H.plat, 3.6));
     b2.push(ballFly(T2 + 2.65, T2 + 3.75, rc1, H.plat, tp1, H.catchUp, 4.0));
     b2.push(ballHold('T', T2 + 3.75, T2 + REP3, { h: H.catchUp, fout: 0.3 }));
     b2.push(ballHide(T2 + REP3, DUR - 0.8));
@@ -147,7 +149,7 @@
     ov.push({ type: 'ring', t0: T2 + 1.45, t1: T2 + 1.95, at: netPt, r: 0.45 });
     ov.push({ type: 'text', t0: T2 + 1.45, t1: T2 + 2.3, at: [netPt[0], -1.4], text: 'No entró', tone: 'white' });
     ov.push({ type: 'line', t0: T2 + 1.55, t1: T2 + 2.65, from: CO, to: r1 });
-    ov.push({ type: 'text', t0: T2 + 1.55, t1: T2 + 2.65, at: [8.6, 2.5], text: 'Lanza el coach', tone: 'gold' });
+    ov.push({ type: 'text', t0: T2 + 1.55, t1: T2 + 2.65, at: [CO[0] + 1.2, CO[1] - 1.1], text: 'Lanza el coach por encima de la malla', tone: 'gold' });
     ov.push({ type: 'text', t0: T2 + 2.7, t1: T2 + 3.5, at: [r1[0], r1[1] + 1.3], text: 'Pausa', tone: 'white' });
     ov.push({ type: 'ring', t0: T2 + 3.75, t1: T2 + 4.25, at: TP, r: 0.5 });
     if (reto) { counter(T2 + 3.75, T2 + REP3); }
@@ -180,9 +182,9 @@
       },
       actors: {
         SV: { role: 'partner', label: 'S', track: [[0, SV[0], SV[1]]], faceTrack: svf, gest: gest },
-        R5: { role: 'player', label: 'R', track: [[0, R.R5[0], R.R5[1]]], face: { toPoint: SV }, plat: plat.R5, hi: hi.R5, feet: 'L' },
+        R5: { role: 'player', label: 'R', track: [[0, R.R5[0], R.R5[1]]], face: { toPoint: SV }, plat: plat.R5, hi: hi.R5, feet: 'R' },
         R6: { role: 'player', label: 'R', track: [[0, R.R6[0], R.R6[1]]], face: { toPoint: SV }, plat: plat.R6, hi: hi.R6, feet: 'L' },
-        R1: { role: 'player', label: 'R', track: [[0, r1[0], r1[1]]], faceTrack: r1f, plat: plat.R1, hi: hi.R1, feet: 'R' },
+        R1: { role: 'player', label: 'R', track: [[0, r1[0], r1[1]]], faceTrack: r1f, plat: plat.R1, hi: hi.R1, feet: 'L' },
         T: { role: 'target', label: 'T', track: [[0, TP[0], TP[1] + 0.1]], face: { toPoint: R.R6 } },
         CO: { role: 'coach', label: 'CO', track: [[0, CO[0], CO[1]]], face: { toActor: 'R1' } }
       },
@@ -242,14 +244,15 @@
     var small = age === '7-8', back = age === '11-12';
     var TG = tgt(age), TP = TG.p;
     var R = [4.5, small ? 5.2 : 6.0];
-    var CO = small ? [7.4, 4.4] : [7.0, -1.2];
+    var CO = small ? [6.3, 2.3] : [5.2, -2.8];   /* 7–8U de nuestro lado y de frente; 9–12U del otro lado de la malla */
     var hC = small ? 1.1 : 1.5;
     var Z4 = [0.9, 0.9], Z2 = [8.1, 0.9];
-    var S0 = [TP[0] - 1.2, TP[1] + TG.r + 1.25];
+    var S0 = small ? [6.3, 4.0] : [6.4, 3.9];      /* el colocador sale desde la zona 1, cerca del centro */
     var REP = small ? 5.2 : 4.8, ROT = 1.8;
     var reps = back ? ['Z4', 'Z2'] : ['Z4', 'Z4'];
     var TR = reps.length * REP, DUR = TR + ROT;
     var b = [], ov = [], phases = [], platR = [], platS = [], st = [[0, S0[0], S0[1]]], hiR = [], hiS = [], cnt = 0;
+    var aRun = angleTo(S0, TP), sft = [[0, aRun]];
     var rc = toward(R, CO, 0.45 * k), sc = toward(TP, rc, 0.22);
     reps.forEach(function (to, j) {
       var T = j * REP, dest = to === 'Z2' ? Z2 : Z4, cid = to === 'Z2' ? 'C2' : 'C4', cp = toward(dest, TP, 0.3);
@@ -263,10 +266,11 @@
       platR.push({ t0: T + 1.15, t1: T + 2.2, toPoint: TP });
       if (!small) { platS.push({ t0: ts - 0.32, t1: ts + 0.14, kind: 'hands', toPoint: cp }); }
       else { platS.push({ t0: ts - 0.05, t1: ts + 0.14, kind: 'hands', toPoint: cp }); }
-      hiR.push([T, T + 2.7]); hiS.push([T + 1.3, ts + 1.1]);
-      key(st, T + 1.3, S0); key(st, T + 2.2, TP); key(st, ts + 0.5, TP); key(st, T + REP - 0.15, S0);
+      hiR.push([T, T + 2.7]); hiS.push([T + 0.6, ts + 1.1]);
+      key(st, T + 0.6, S0); key(st, T + 1.75, TP); key(st, ts + 0.5, TP); key(st, T + REP - 0.15, S0);   /* sale cuando lanza el coach */
+      sft.push([T + 0.6, aRun], [T + 1.5, aRun], [T + 1.85, 270], [ts + 0.55, 270], [ts + 0.8, angleTo(TP, S0)], [T + REP - 0.4, angleTo(TP, S0)], [T + REP - 0.1, aRun]);
       ov.push({ type: 'line', t0: T, t1: T + 1.65, from: CO, to: R });
-      ov.push({ type: 'text', t0: T + 1.3, t1: T + 2.45, at: [TP[0] - 2.3, TP[1] + 0.3], text: 'Llega antes', tone: 'gold' });
+      ov.push({ type: 'text', t0: T + 0.7, t1: T + 2.45, at: [TP[0] - 2.3, TP[1] + 0.3], text: 'Llega antes', tone: 'gold' });
       if (small) { ov.push({ type: 'text', t0: T + 2.75, t1: T + 3.15, at: [TP[0], TP[1] + 1.25], text: 'Atrapa y volea', tone: 'white' }); }
       ov.push({ type: 'text', t0: ts, t1: ts + 1.15, at: to === 'Z2' ? [Z2[0] - 1.5, Z2[1] + 1.3] : [Z4[0] + 1.5, Z4[1] + 1.3], text: to === 'Z2' ? 'Atrás al 2' : 'Alto al 4', tone: 'gold' });
       ov.push({ type: 'ring', t0: ts + 1.1, t1: ts + 1.6, at: dest, r: 0.5 });
@@ -276,15 +280,15 @@
     b.push(ballHide(TR, DUR - 0.5));
     b.push(ballHold('CO', DUR - 0.5, DUR, { h: hC, fin: 0.3 }));
     var q1 = [R[0], R[1] + 0.9];
-    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R, TP, 0.5), toward(TP, R, 0.6)] });
+    ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(R, S0, 0.5), toward(S0, R, 0.5)] });
     ov.push({ type: 'path', t0: TR, t1: DUR, pts: [toward(TP, Z4, 0.6), toward(Z4, TP, 0.6)] });
     ov.push({ type: 'path', t0: TR, t1: DUR, pts: [[Z4[0] - 0.3, Z4[1] + 0.6], [-0.85, Z4[1] + 1.6], [-0.85, q1[1] + 0.8], [q1[0] - 0.6, q1[1] + 0.8]] });
-    ov.push({ type: 'text', t0: TR, t1: DUR, at: [4.5, 9.4], text: reto ? 'Ronda 2: supera tu marca' : 'Rota: recibe, coloca, atrapa y a la fila', tone: 'gold' });
+    ov.push({ type: 'text', t0: TR, t1: DUR, at: [4.5, 9.4], text: reto ? 'Ronda 2: supera tu marca' : 'Rota: recibe, sale a colocar, atrapa y a la fila', tone: 'gold' });
     phases.push([TR, DUR, 4]);
     var actors = {
       CO: { role: 'coach', label: 'CO', track: [[0, CO[0], CO[1]]], face: { toActor: 'R' } },
       R: { role: 'player', label: 'R', track: [[0, R[0], R[1]]], face: { toActor: 'CO' }, plat: platR, hi: hiR, feet: 'L' },
-      S: { role: 'player', label: 'CL', track: st, face: { angle: 270 }, plat: platS, hi: hiS },
+      S: { role: 'player', label: 'CL', track: st, faceTrack: sft, plat: platS, hi: hiS },
       C4: { role: 'partner', label: 'C', track: [[0, Z4[0], Z4[1]]], face: { toPoint: TP } }
     };
     if (back) { actors.C2 = { role: 'partner', label: 'C', track: [[0, Z2[0], Z2[1]]], face: { toPoint: TP } }; }
@@ -298,6 +302,7 @@
         F.hoop(Z4, 0.5, ''); F.label([Z4[0] - 0.75, Z4[1]], 'ZONA 4', { anchor: 'end', color: A.COL.gold });
         if (back) { F.hoop(Z2, 0.5, ''); F.label([Z2[0] + 0.75, Z2[1]], 'ZONA 2', { anchor: 'start', color: A.COL.gold }); }
         F.queue([q1, [R[0], R[1] + 1.65]]);
+        F.label([S0[0] + 0.15, S0[1] + 0.75], 'SALE EL COLOCADOR', { color: A.COL.gold, size: 0.3, max: 12 });
         F.label([-1.0, 9.9], 'FILA DE RECIBO', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
         F.label([10.0, 9.9], small ? 'COACH EN NUESTRO LADO' : 'COACH AL OTRO LADO', { anchor: 'end', color: A.COL.gold, ls: 1.5 });
       },
@@ -307,11 +312,40 @@
   SCENES.rc1 = function (age) { return rcScene(age, false); };
   SCENES.rc2 = function (age) { return rcScene(age, true); };
 
+  /* ======================= CARRERAS DE ATAQUE (derechos) =======================
+     4 pasos de unos 3 m que arrancan cerca de la línea de 3 m (no desde el fondo).
+     9–10U: carrera corta y casi derecha.
+     11–12U: por el 4 arranca por fuera de la lateral y entra en diagonal (de afuera hacia adentro);
+             por el 2 arranca un poco por fuera y va casi en línea. Los zurdos lo hacen al revés. */
+  function atkLines(age) {
+    if (age === '11-12') {
+      return [{ id: 'Z4', S: [-0.85, 3.95], J: [1.15, 1.05] }, { id: 'Z2', S: [9.2, 4.0], J: [8.25, 1.05] }];
+    }
+    return [{ id: 'Z4', S: [1.0, 4.1], J: [1.5, 1.15] }, { id: 'Z2', S: [7.95, 4.1], J: [7.45, 1.15] }];
+  }
+  /* la fila espera detrás del punto de salida, en la misma dirección de la carrera */
+  function atkQueue(L) {
+    var d = M.sub(L.S, L.J), m = Math.sqrt(d[0] * d[0] + d[1] * d[1]) || 1, u = [d[0] / m, d[1] / m];
+    return [add(L.S, M.scale(u, 0.85)), add(L.S, M.scale(u, 1.6))];
+  }
+  /* mira en la dirección de la carrera y en el salto gira hacia donde ataca */
+  function atkFace(L, t0, tJump, tLand, hitTo, T) {
+    var aRun = angleTo(L.S, L.J), aHit = angleTo(L.J, hitTo), out = [];
+    if (T > 0) { out.push([0, aRun]); }
+    out.push([t0, aRun], [tJump - 0.15, aRun], [tJump + 0.15, aHit], [tLand + 0.2, aHit], [tLand + 0.55, 0]);
+    return out;
+  }
+  /* punto de contacto: un poco adelante del despegue, en la dirección de la carrera, a 0,8 m de la malla */
+  function atkContact(L) {
+    var d = M.sub(L.J, L.S), m = Math.sqrt(d[0] * d[0] + d[1] * d[1]) || 1;
+    return add(L.J, [d[0] / m * 0.3, Math.max(-0.35, d[1] / m * 0.3)]);
+  }
+
   /* ======================= BLOQUE 3 · REPASOS A0 (7–8U) Y A1 (9–12U) ======================= */
   SCENES.a0 = function (age) {
     var k = kidOf('7-8');
-    /* filas en 4, 2 y 6; la fila 6 hace los pasos detrás de la línea de 3 m */
-    var lanes = [{ x: 1.5, dy: 0 }, { x: 7.5, dy: 0 }, { x: 4.5, dy: 1.7 }];
+    /* filas en 4 y 2: esta sesión no lleva fila 6 */
+    var lanes = [{ x: 1.5, dy: 0 }, { x: 7.5, dy: 0 }];
     var REP = 3.4, actors = {}, ball = [], ov = [], phases = [];
     for (var i = 0; i < lanes.length; i++) {
       var x = lanes[i].x, dy = lanes[i].dy, T = i * REP;
@@ -332,11 +366,11 @@
     }
     return {
       dur: REP * lanes.length, kid: k, net: NET, view: { x0: -1.4, x1: 10.4, y0: -3.2, y1: 8.6 }, cam: { el: 50 },
-      label: 'Drill A0 Pasos y lanza: filas en zonas 4, 2 y 6. El jugador pisa un aro con el pie derecho, cierra con los dos pies en el segundo aro y lanza la bola de tenis por encima de la malla.',
+      label: 'Drill A0 Pasos y lanza: filas en zonas 4 y 2. El jugador pisa un aro con el pie derecho, cierra con los dos pies en el segundo aro y lanza la bola de tenis por encima de la malla.',
       bg: function (F) {
         for (var j = 0; j < lanes.length; j++) { F.hoop([lanes[j].x + 0.15, 3.75 + lanes[j].dy], 0.36, 'D', true); F.hoop([lanes[j].x, 2.1 + lanes[j].dy], 0.55, '2 PIES', true); }
-        F.queue([[1.5, 6.4], [7.5, 6.4], [4.5, 8.1]]);
-        F.label([-1.0, 8.3], 'FILAS 4 · 2 · 6', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
+        F.queue([[1.5, 6.4], [7.5, 6.4], [1.5, 7.1], [7.5, 7.1]]);
+        F.label([-1.0, 8.3], 'FILAS 4 · 2', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
       },
       actors: actors, ball: ball, overlays: ov, phases: phases
     };
@@ -344,7 +378,7 @@
 
   SCENES.a1s2 = function (age) {
     var k = kidOf(age), H = A.heights(k);
-    var lines = [{ id: 'Z4', S: [1.2, 7.2], J: [1.9, 1.2], tg: [6.7, -5.2] }, { id: 'Z2', S: [7.8, 7.2], J: [7.1, 1.2], tg: [2.3, -5.2] }];
+    var lines = atkLines(age); lines[0].tg = [6.7, -5.2]; lines[1].tg = [2.3, -5.2];
     var REP = 4.0, times = [0.55, 0.95, 1.3, 1.55], fr = [0.25, 0.55, 0.9, 1.0], sides = [1, -1, 1, -1];
     var actors = {}, ball = [], ov = [], phases = [];
     for (var i = 0; i < lines.length; i++) {
@@ -352,9 +386,9 @@
       var rep = attackRep({ S: Ln.S, J: Ln.J, t0: T, times: times, fr: fr, sides: sides, backStart: 2.6, backEnd: 3.75 });
       var tr = rep.track;
       if (T > 0) { tr.unshift([0, Ln.S[0], Ln.S[1]]); }
-      actors[Ln.id] = { role: 'player', label: 'J', track: tr, face: { toPoint: [Ln.J[0], -1] }, jump: [[T + 1.6, T + 2.35, 0.42]], hi: [[T, T + 2.6]] };
+      actors[Ln.id] = { role: 'player', label: 'J', track: tr, faceTrack: atkFace(Ln, T, T + 1.6, T + 2.35, Ln.tg, T), jump: [[T + 1.6, T + 2.35, 0.42]], hi: [[T, T + 2.6]] };
       ball.push(ballHold(Ln.id, T, T + 1.95, { h: 1.0 * k, side: 1, fin: 0.3, kind: 'tennis' }));
-      ball.push(ballFly(T + 1.95, T + 2.9, add(Ln.J, [0.1, -0.35]), H.spike, Ln.tg, 0, H.spike + 0.9, 'tennis'));
+      ball.push(ballFly(T + 1.95, T + 2.9, atkContact(Ln), H.spike, Ln.tg, 0, H.spike + 0.9, 'tennis'));
       ball.push(ballHold(null, T + 2.9, T + 3.35, { h: 0.03, at: Ln.tg, fout: 0.4, kind: 'tennis' }));
       ball.push(ballHide(T + 3.35, T + REP));
       for (var f = 0; f < rep.feet.length; f++) { var ft = rep.feet[f]; ov.push({ type: 'foot', t0: ft.t, t1: T + 3.7, at: ft.at, ang: ft.ang, side: ft.side, n: ft.n }); }
@@ -362,11 +396,11 @@
       phases.push([T + 0.25, T + 1.0, 0], [T + 1.0, T + 1.35, 1], [T + 1.35, T + 1.95, 2], [T + 1.95, T + 2.6, 3]);
     }
     return {
-      dur: REP * lines.length, kid: k, net: NET, view: { x0: -1.4, x1: 10.4, y0: -6.6, y1: 9.4 }, cam: { el: 48 },
+      dur: REP * lines.length, kid: k, net: NET, view: { x0: -2.4, x1: 10.9, y0: -6.6, y1: 7.6 }, cam: { el: 48 },
       label: 'Drill A1 Lanza sobre la malla: filas en zonas 4 y 2, carrera de 4 pasos y lanzamiento de la bola de tenis por encima de la malla.',
       bg: function (F) {
-        F.queue([[0.8, 8.1], [0.6, 8.8], [8.2, 8.1], [8.4, 8.8]]);
-        F.label([-1.0, 9.1], 'FILAS 4 · 2', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
+        F.queue(atkQueue(lines[0]).concat(atkQueue(lines[1])));
+        F.label([-2.2, 7.3], 'FILAS 4 · 2', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
       },
       actors: actors, ball: ball, overlays: ov, phases: phases,
       side: { kind: 'tennis', period: REP }
@@ -384,27 +418,27 @@
     if (age === '7-8') { return reto ? ca78Throw() : ca78Catch(); }
     var k = kidOf(age), H = A.heights(k);
     var back = age === '11-12', off = back ? 0.45 : 0, REP = back ? 4.8 : 4.0;
-    var lines = [
-      { id: 'Z4', S: [0.9, 7.0], J: [1.9, 1.2], tg: diagTarget(true) },
-      back ? { id: 'Z2', S: [8.8, 7.0], J: [8.0, 1.2], tg: diagTarget(false) } : { id: 'Z2', S: [8.1, 7.0], J: [7.1, 1.2], tg: diagTarget(false) }
-    ];
+    var lines = atkLines(age); lines[0].tg = diagTarget(true); lines[1].tg = diagTarget(false);
     var CO = back ? [4.5, 4.6] : [5.4, 1.6];
     var SET = [A.TGT[0], A.TGT[1]];
     var times = [0.85, 1.25, 1.6, 1.85], fr = [0.25, 0.55, 0.9, 1.0], sides = [1, -1, 1, -1];
     var actors = {}, ball = [], ov = [], phases = [], cof = [], platS = [], cnt = 0;
+    var S0 = [6.4, 3.9], stS = [[0, S0[0], S0[1]]], sfS = [[0, angleTo(S0, SET)]];   /* 11–12U: el colocador sale desde la zona 1 */
     for (var i = 0; i < lines.length; i++) {
       var Ln = lines[i], T = i * REP, t0 = T + off;
       var rep = attackRep({ S: Ln.S, J: Ln.J, t0: t0, times: times, fr: fr, sides: sides, backStart: 2.95, backEnd: 3.9 });
       var tr = rep.track;
       if (T > 0) { tr.unshift([0, Ln.S[0], Ln.S[1]]); }
-      actors[Ln.id] = { role: 'player', label: 'J', track: tr, face: { toPoint: [Ln.J[0], -1] }, jump: [[t0 + 1.9, t0 + 2.6, 0.45]], hi: [[T, t0 + 2.9]] };
-      var cpt = add(Ln.J, [0, -0.35]), tc = t0 + 2.15;
+      actors[Ln.id] = { role: 'player', label: 'J', track: tr, faceTrack: atkFace(Ln, t0, t0 + 1.9, t0 + 2.6, Ln.tg, T), jump: [[t0 + 1.9, t0 + 2.6, 0.45]], hi: [[T, t0 + 2.9]] };
+      var cpt = atkContact(Ln), tc = t0 + 2.15;
       if (back) {
         var sc = toward(SET, CO, 0.22);
         ball.push(ballHold('CO', T, T + 0.3, i ? { h: 1.5, fin: 0.25 } : { h: 1.5 }));
         ball.push(ballFly(T + 0.3, T + 1.3, toward(CO, SET, 0.4), 1.5, sc, H.set, 3.6));
         ball.push(ballFly(T + 1.3, tc, sc, H.set, cpt, H.spike, Ln.id === 'Z2' ? 3.7 : 4.1));
         platS.push({ t0: T + 1.0, t1: T + 1.42, kind: 'hands', toPoint: cpt });
+        key(stS, T + 0.05, S0); key(stS, T + 0.95, [SET[0], SET[1] + 0.15]); key(stS, T + 1.75, [SET[0], SET[1] + 0.15]); key(stS, T + REP - 0.2, S0);
+        sfS.push([T + 0.05, angleTo(S0, SET)], [T + 0.8, angleTo(S0, SET)], [T + 1.0, 270], [T + 1.8, 270], [T + 2.1, angleTo(SET, S0)], [T + REP - 0.4, angleTo(SET, S0)], [T + REP - 0.15, angleTo(S0, SET)]);
         ov.push({ type: 'text', t0: T + 1.3, t1: T + 2.4, at: [SET[0], SET[1] + 1.25], text: Ln.id === 'Z2' ? 'Atrás al 2' : 'Adelante al 4', tone: 'white' });
       } else {
         var aJ = angleTo(CO, Ln.J);
@@ -420,6 +454,7 @@
       var sx = Ln.S[0] < 4.5 ? 1.9 : -1.9;
       ov.push({ type: 'text', t0: T + 0.2, t1: t0 + 1.3, at: [Ln.S[0] + sx, Ln.S[1] + 0.2], text: 'Espera y arranca', tone: 'gold' });
       ov.push({ type: 'text', t0: tc, t1: tc + 0.75, at: add(Ln.J, [Ln.J[0] < 4.5 ? 1.8 : -1.8, 0.6]), text: 'Alto y cruzado', tone: 'gold' });
+      if (age === '11-12') { ov.push({ type: 'text', t0: T + 0.2, t1: t0 + 1.6, at: [Ln.S[0] + (Ln.S[0] < 4.5 ? 1.6 : -1.6), Ln.S[1] + 1.0], text: Ln.id === 'Z4' ? 'Por fuera, en diagonal' : 'Casi en línea', tone: 'white' }); }
       ov.push({ type: 'ring', t0: tc + 0.7, t1: tc + 1.2, at: Ln.tg, r: 0.5 });
       if (reto) { cnt++; ov.push({ type: 'text', t0: tc + 0.7, t1: T + REP, at: [Ln.tg[0], Ln.tg[1] + 1.9], text: 'En la zona: ' + cnt, tone: 'gold' }); }
       phases.push([T, t0 + 0.85, 0], [t0 + 0.85, t0 + 1.9, 1], [t0 + 1.9, t0 + 2.9, 2], [t0 + 2.9, T + REP, 3]);
@@ -427,22 +462,22 @@
     var DUR = REP * lines.length;
     if (back) {
       actors.CO = { role: 'coach', label: 'CO', track: [[0, CO[0], CO[1]]], face: { toPoint: SET } };
-      actors.S = { role: 'player', label: 'CL', track: [[0, SET[0], SET[1] + 0.15]], face: { angle: 270 }, plat: platS, hi: [[0.2, 1.5], [REP + 0.2, REP + 1.5]] };
+      actors.S = { role: 'player', label: 'CL', track: stS, faceTrack: sfS, plat: platS, hi: [[0.2, 1.5], [REP + 0.2, REP + 1.5]] };
     } else {
       cof.push([DUR, cof[0][1]]);
       actors.CO = { role: 'coach', label: 'CO', track: [[0, CO[0], CO[1]]], faceTrack: cof };
     }
     return {
-      dur: DUR, kid: k, net: NET, view: { x0: -1.4, x1: 10.4, y0: -9.4, y1: 8.6 }, cam: { el: 46 },
+      dur: DUR, kid: k, net: NET, view: { x0: -2.4, x1: 10.9, y0: -9.4, y1: 7.2 }, cam: { el: 46 },
       label: (reto ? 'Drill CA2 Diagonal al target: ' : 'Drill CA1 Coloca y ataca: ') +
         (back ? 'el coach le lanza al colocador, que coloca al 4 o atrás al 2; el atacante hace la carrera de 4 pasos y ataca en diagonal.'
               : 'el coach lanza alto desde la zona 3 y el atacante hace la carrera de 4 pasos y ataca en diagonal, sin tip.') +
         (reto ? ' Se cuentan los ataques que caen en la zona.' : ''),
       bg: function (F) {
         if (reto) { zoneDiag(F, !back); }
-        if (back) { F.target(SET, 0.6, ''); }
-        F.queue([[lines[0].S[0] - 0.4, lines[0].S[1] + 0.9], [lines[0].S[0] - 0.7, lines[0].S[1] + 1.7], [lines[1].S[0] + 0.4, lines[1].S[1] + 0.9], [Math.min(lines[1].S[0] + 0.7, 10.0), lines[1].S[1] + 1.7]]);
-        F.label([-1.0, 8.3], back ? 'FILAS 4 · 2 · COLOCADOR ENTRE 2 Y 3' : 'FILAS 4 · 2 · COACH EN 3', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
+        if (back) { F.target(SET, 0.6, ''); F.label([S0[0] + 0.2, S0[1] + 0.75], 'SALE EL COLOCADOR', { color: A.COL.gold, size: 0.3, max: 12 }); }
+        F.queue(atkQueue(lines[0]).concat(atkQueue(lines[1])));
+        F.label([-2.2, 6.9], back ? 'FILAS 4 · 2 · COLOCADOR ENTRE 2 Y 3' : 'FILAS 4 · 2 · COACH EN 3', { anchor: 'start', color: '#FFFFFF', ls: 1.5 });
       },
       actors: actors, ball: ball, overlays: ov, phases: phases
     };
