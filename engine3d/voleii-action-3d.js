@@ -27,17 +27,21 @@
 
   /* ======================= UNIFORMES ======================= */
   var KITS = {
-    azul: { jersey: '#0E2A63', shorts: '#0A1F4A', socks: '#0E2A63', trim: '#FFCF28' },
-    blanco: { jersey: '#EEF1F5', shorts: '#0A1F4A', socks: '#EEF1F5', trim: '#0E2A63' },
-    verde: { jersey: '#2FA62B', shorts: '#0B0D11', socks: '#2FA62B', trim: '#F7E811' },
-    staff: { jersey: '#2A303B', shorts: '#1B2029', socks: '#1B2029', trim: '#C9D0D9' }
+    azul: { jersey: '#0E2A63', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#FFCF28' },
+    blanco: { jersey: '#EEF1F5', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#0E2A63' },
+    verde: { jersey: '#2FA62B', shorts: '#F1F3F6', socks: '#2FA62B', trim: '#F7E811' },
+    blancoVerde: { jersey: '#EEF1F5', shorts: '#2FA62B', socks: '#F1F3F6', trim: '#2FA62B' },
+    staff: { jersey: '#4A5568', shorts: '#F1F3F6', socks: '#F1F3F6', trim: '#D5DBE3' }
   };
   /* qué uniforme lleva cada papel de la escena (en Vaqueros el que trabaja va de blanco: se ve mejor sobre la cancha azul) */
   var TEAMS = {
     vaqueros: { player: 'blanco', partner: 'azul', target: 'azul', coach: 'staff', rival: 'verde' },
-    plataneros: { player: 'verde', partner: 'blanco', target: 'blanco', coach: 'staff', rival: 'azul' }
+    plataneros: { player: 'verde', partner: 'blancoVerde', target: 'blancoVerde', coach: 'staff', rival: 'azul' }
   };
   G.KITS = KITS; G.TEAMS = TEAMS; G.team = 'vaqueros';
+  /* cámara de la vista 3D real: inclinación (grados), distancia (1 = la del motor) y margen alrededor de la acción (m) */
+  G.cam = { el: 30, dist: 0.6, pad: 1.0, follow: false };
+  /* follow: la cámara sigue la jugada (balón, de dónde sale y a dónde va, y el que trabaja); false = cámara fija */
 
   /* ======================= CUERPOS ======================= */
   var MODELS = [
@@ -517,6 +521,10 @@
     rd.render(S.scene, S.camera);
     R.ctx.drawImage(rd.domElement, 0, 0, R.W, R.H);
     return true;
+  };
+  G.setFollow = function (on) {
+    G.cam.follow = !!on;
+    A.refresh();
   };
   G.setTeam = function (name) {
     if (!TEAMS[name]) { return; }

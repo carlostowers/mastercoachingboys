@@ -197,7 +197,7 @@
     o = o || {};
     var el = rad(lerp(89.4, o.el || 50, e));
     var cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2, size = Math.max(R.x1 - R.x0, R.y1 - R.y0);
-    var dist = Math.exp(lerp(Math.log(200), Math.log(size * 1.25 + 6), e));
+    var dist = Math.exp(lerp(Math.log(200), Math.log((size * 1.25 + 6) * (o.dist || 1)), e));
     var az = rad((o.az || 0) * e);
     var tg = { x: cx, y: cy + lerp(0, size * 0.05, e), z: lerp(0, 0.4, e) };
     var eye = { x: tg.x + dist * Math.sin(az) * Math.cos(el), y: tg.y + dist * Math.cos(az) * Math.cos(el), z: tg.z + dist * Math.sin(el) };
@@ -236,9 +236,9 @@
     return { s: s, ox: pad.l + (aw - (maxx - minx) * s) / 2 - minx * s, oy: pad.t + (ah - (maxy - miny) * s) / 2 - miny * s, w: maxx - minx, h: maxy - miny };
   }
   /* proporción de la imagen para una escena (ancho / alto) en la vista 3D */
-  function aspectFor(sc, e) {
+  function aspectFor(sc, e, fr) {
     e = e === undefined ? 1 : e;
-    var R = sc.view, cam = camera(e, R, sc.cam), f = fitFor(cam, boundsPts(R, e, sc.net ? sc.net.h : 0), 1000, 1000, { l: 0, r: 0, t: 0, b: 0 });
+    var R = fr ? fr.R : sc.view, cam = camera(e, R, fr ? fr.cam : sc.cam), f = fitFor(cam, boundsPts(R, e, sc.net ? sc.net.h : 0), 1000, 1000, { l: 0, r: 0, t: 0, b: 0 });
     return clamp(f.w / f.h, e < 0.5 ? 0.4 : 0.62, 1.9);
   }
   A.camera = camera;
@@ -262,13 +262,15 @@
       this.cv.width = Math.round(w * dpr); this.cv.height = Math.round(h * dpr);
     }
   };
-  RP.setView = function (v, sc) {
+  /* fr: encuadre { R: región, cam: { el, az, dist } }; si no se da, el de la escena */
+  RP.setView = function (v, sc, fr) {
+    var VR = fr ? fr.R : sc.view, CO = fr ? fr.cam : sc.cam;
     this.e = ease(v);
-    this.cam = camera(this.e, sc.view, sc.cam);
+    this.cam = camera(this.e, VR, CO);
     var nh = sc.net ? sc.net.h : 0;
-    var fa = fitFor(camera(0, sc.view, sc.cam), boundsPts(sc.view, 0, nh), this.W, this.H, this.pad);
-    var fb = fitFor(camera(1, sc.view, sc.cam), boundsPts(sc.view, 1, nh), this.W, this.H, this.pad);
-    var fc = fitFor(this.cam, boundsPts(sc.view, this.e, nh), this.W, this.H, this.pad);
+    var fa = fitFor(camera(0, VR, CO), boundsPts(VR, 0, nh), this.W, this.H, this.pad);
+    var fb = fitFor(camera(1, VR, CO), boundsPts(VR, 1, nh), this.W, this.H, this.pad);
+    var fc = fitFor(this.cam, boundsPts(VR, this.e, nh), this.W, this.H, this.pad);
     /* transición suave: en los extremos se usa el encuadre exacto */
     this.fit = this.e <= 0.001 ? fa : (this.e >= 0.999 ? fb : fc);
   };
@@ -324,6 +326,7 @@
     for (i = 0; i < list.length; i++) {
       p = list[i];
       if (p.a <= 0.01) { continue; }
+      if (p.x < -40 || p.x > this.W + 40 || p.y < -40 || p.y > this.H + 40) { continue; }
       c.save(); c.globalAlpha = p.a;
       c.font = '700 ' + p.size + 'px ' + FONT;
       w = c.measureText(p.text).width + p.size * 1.0; h = p.size + 8; r = h / 2;
@@ -402,7 +405,7 @@
     var k0 = this.ppm(4.5, 4.5, 0), p3 = this.P(-0.55, 3, 0);
     c.font = '700 ' + clamp(k0 * 0.26, 8, 12) + 'px ' + FONT;
     c.fillStyle = 'rgba(185,196,216,0.7)'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    if (R.x0 < -0.6) { c.fillText('3 m', p3.x, p3.y); }
+    if (R.x0 < -0.6 && !this.hideDims) { c.fillText('3 m', p3.x, p3.y); }
     c.restore();
   };
   RP.drawNet = function (sc) {
@@ -453,7 +456,12 @@
       this.path(pts); c.closePath(); c.fillStyle = rgba(COL.gold, 0.15); c.fill();
       k = this.ppm(it.p[0], it.p[1], 0);
       c.setLineDash([7, 5]); c.lineWidth = Math.max(2, k * 0.05); c.strokeStyle = COL.gold; c.stroke(); c.setLineDash([]);
-      if (it.label) { q = this.P(it.p[0], it.p[1] + it.r + 0.34, 0); this.pill(q.x, q.y, it.label, { size: clamp(k * 0.24, 9, 12), color: COL.gold, border: COL.gold, z: -1, a: it.labA == null ? 1 : it.labA }); }
+      if (it.label) {
+        /* en la vista 3D real el rótulo va al lado del target, para no tapar a los que están delante */
+        var sd = it.p[0] > 6 ? -1 : 1;
+        q = this.hideDims ? this.P(it.p[0] + sd * (it.r + 1.05), it.p[1], 0) : this.P(it.p[0], it.p[1] + it.r + 0.34, 0);
+        this.pill(q.x, q.y, it.label, { size: clamp(k * 0.24, 9, 12), color: COL.gold, border: COL.gold, z: -1, a: it.labA == null ? 1 : it.labA });
+      }
     } else if (it.k === 'zone') {
       this.poly([[it.x, it.y, 0.01], [it.x + it.w, it.y, 0.01], [it.x + it.w, it.y + it.h, 0.01], [it.x, it.y + it.h, 0.01]], rgba(COL.gold, 0.13));
       c.setLineDash([8, 6]);
@@ -676,7 +684,7 @@
       cv.setAttribute('role', 'img');
       cv.setAttribute('aria-label', sc.label || '');
       cv.style.display = 'block'; cv.style.width = '100%'; cv.style.maxWidth = '100%';
-      cv.style.aspectRatio = aspectFor(sc, this.viewGoal > 0.5 ? 1 : 0).toFixed(3);   /* la vista desde arriba usa una imagen más alta */
+      cv.style.aspectRatio = this.aspectGoal().toFixed(3);   /* la vista desde arriba usa una imagen más alta */
       stage.appendChild(cv);
       this.cv = cv;
       this.R = new Renderer(cv);
@@ -737,6 +745,80 @@
     }
   };
 
+  /* ¿se dibuja con la capa 3D real? */
+  DP.can3d = function () { var GL = A.GL; return !!(GL && GL.ready && this.gl3d !== false); };
+  DP.aspectGoal = function () { return this.viewGoal > 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, this.viewGoal > 0.5 ? 1 : 0); };
+  /* encuadre de la vista 3D real: la región donde pasa la acción (jugadores, filas, aros, balón), con la cancha a lo ancho */
+  DP.frame3d = function () {
+    var sc = this.sc, G = A.GL || {}, gc = G.cam || {}, sv = sc.view, i, j;
+    if (this.f3 && this.f3.sc === sc && this.f3.el === gc.el && this.f3.dist === gc.dist && this.f3.pad === gc.pad && this.f3.fw === gc.fullWidth) { return this.f3.fr; }
+    var xs = [], ys = [];
+    function add2(p) { if (p && isFinite(p[0]) && isFinite(p[1])) { xs.push(p[0]); ys.push(p[1]); } }
+    var ids = Object.keys(sc.actors);
+    for (i = 0; i < ids.length; i++) { var tr = sc.actors[ids[i]].track || []; for (j = 0; j < tr.length; j++) { add2([tr[j][1], tr[j][2]]); } }
+    for (i = 0; i < sc.items.length; i++) {
+      var it = sc.items[i], r = it.r || 0;
+      if (it.k === 'queue' || it.k === 'cone') { add2(it.p); }
+      else if (it.k === 'hoop' || it.k === 'target') { add2([it.p[0] - r, it.p[1] - r]); add2([it.p[0] + r, it.p[1] + r]); }
+      else if (it.k === 'zone') { add2([it.x, it.y]); add2([it.x + it.w, it.y + it.h]); }
+      else if (it.k === 'line') { add2(it.a); add2(it.b); }
+    }
+    var lists = this.lists || [];
+    for (i = 0; i < lists.length; i++) { for (j = 0; j < lists[i].length; j++) { var sg = lists[i][j]; if (sg.type === 'fly') { add2(sg.a); add2(sg.b); } } }
+    var pad = gc.pad == null ? 1.0 : gc.pad;
+    var R = { x0: sv.x0, x1: sv.x1, y0: sv.y0, y1: sv.y1 };
+    if (xs.length) {
+      R.x0 = Math.max(sv.x0, Math.min.apply(null, xs) - pad); R.x1 = Math.min(sv.x1, Math.max.apply(null, xs) + pad);
+      R.y0 = Math.max(sv.y0, Math.min.apply(null, ys) - pad); R.y1 = Math.min(sv.y1, Math.max.apply(null, ys) + pad);
+    }
+    if (sc.court !== 'floor' && gc.fullWidth) { R.x0 = Math.min(R.x0, -0.3); R.x1 = Math.max(R.x1, 9.3); }
+    var fr = { R: R, cam: { el: gc.el || 30, az: (sc.cam && sc.cam.az) || 0, dist: gc.dist || 0.6 } };
+    this.f3 = { sc: sc, el: gc.el, dist: gc.dist, pad: gc.pad, fw: gc.fullWidth, fr: fr };
+    return fr;
+  };
+  /* cámara que sigue la jugada: encuadra el balón, de dónde sale y a dónde va, y al que trabaja (aro dorado);
+     se suaviza en el tiempo (antes y después de t) para que no brinque */
+  DP.actionBox = function (t) {
+    var sc = this.sc, xs = [], ys = [], i, j, L;
+    function add2(p) { if (p && isFinite(p[0]) && isFinite(p[1])) { xs.push(p[0]); ys.push(p[1]); } }
+    for (L = 0; L < this.lists.length; L++) {
+      var segs = this.lists[L], b = this.ballAt(segs, t);
+      if (!b) { continue; }
+      add2(b.pos);
+      if (b.seg && b.seg.type === 'fly') { add2(b.seg.a); add2(b.seg.b); }
+      if (b.seg && b.seg.type === 'hold' && b.seg.who) { add2(this.actorPos(b.seg.who, t)); }
+    }
+    var ids = Object.keys(sc.actors);
+    for (i = 0; i < ids.length; i++) {
+      var a = sc.actors[ids[i]], hi = 0;
+      if (a.hi) { for (j = 0; j < a.hi.length; j++) { hi = Math.max(hi, fade(t, a.hi[j][0], a.hi[j][1], 0.2, 0.2)); } }
+      if (hi > 0.15) { add2(this.actorPos(ids[i], t)); }
+    }
+    if (!xs.length) { return null; }
+    return { x0: Math.min.apply(null, xs), x1: Math.max.apply(null, xs), y0: Math.min.apply(null, ys), y1: Math.max.apply(null, ys) };
+  };
+  DP.followFrame = function (t) {
+    var base = this.frame3d(), G = A.GL || {}, gc = G.cam || {}, B = base.R, k, acc = { x0: 0, x1: 0, y0: 0, y1: 0 }, wsum = 0;
+    var span = gc.smooth || 0.9, dur = this.sc.dur;
+    for (k = -6; k <= 6; k++) {
+      var tt = t + span * k / 6, w = 1 - Math.abs(k) / 7;
+      if (tt < 0) { tt += dur; } if (tt > dur) { tt -= dur; }
+      var bx = this.actionBox(tt);
+      if (!bx) { continue; }
+      acc.x0 += bx.x0 * w; acc.x1 += bx.x1 * w; acc.y0 += bx.y0 * w; acc.y1 += bx.y1 * w; wsum += w;
+    }
+    if (!wsum) { return base; }
+    var R = { x0: acc.x0 / wsum, x1: acc.x1 / wsum, y0: acc.y0 / wsum, y1: acc.y1 / wsum };
+    var pad = gc.followPad == null ? 1.6 : gc.followPad, minW = gc.minW || 6.5, minD = gc.minD || 5.5;
+    R.x0 -= pad; R.x1 += pad; R.y0 -= pad; R.y1 += pad;
+    var cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2;
+    if (R.x1 - R.x0 < minW) { R.x0 = cx - minW / 2; R.x1 = cx + minW / 2; }
+    if (R.y1 - R.y0 < minD) { R.y0 = cy - minD / 2; R.y1 = cy + minD / 2; }
+    /* dentro del encuadre fijo */
+    function fitIn(a0, a1, b0, b1) { var w2 = Math.min(a1 - a0, b1 - b0); if (a0 < b0) { a0 = b0; a1 = b0 + w2; } if (a1 > b1) { a1 = b1; a0 = b1 - w2; } return [a0, a1]; }
+    var fx = fitIn(R.x0, R.x1, B.x0, B.x1), fy = fitIn(R.y0, R.y1, B.y0, B.y1);
+    return { R: { x0: fx[0], x1: fx[1], y0: fy[0], y1: fy[1] }, cam: base.cam };
+  };
   DP.actorPos = function (id, t) { var a = this.sc.actors[id]; return a ? samplePos(a.track, t) : [0, 0]; };
   DP.faceAngle = function (id, t, pos) {
     var a = this.sc.actors[id], f = a.face || {};
@@ -1244,13 +1326,20 @@
     try {
       var sc = this.sc, R = this.R, c = R.ctx, ids = Object.keys(sc.actors), i;
       R.resize();
-      R.setView(this.view, sc);
+      /* capa 3D real: cámara más baja y más cerca, encuadre en donde está la acción */
+      var GL = A.GL, use3d = this.view >= 0.5 && this.can3d();
+      if (use3d !== this.was3d) {
+        this.was3d = use3d;
+        if (this.viewGoal > 0.5) { this.cv.style.aspectRatio = this.aspectGoal().toFixed(3); R.resize(); }
+      }
+      R.hideDims = use3d;
+      R.setView(this.view, sc, use3d ? (A.GL.cam && A.GL.cam.follow ? this.followFrame(t) : this.frame3d()) : null);
       c.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
       c.clearRect(0, 0, R.W, R.H);
       c.fillStyle = COL.bg; c.fillRect(0, 0, R.W, R.H);
       R.pills = [];
       R.drawFloor(sc);
-      for (i = 0; i < sc.items.length; i++) { if (sc.items[i].k !== 'cone' && sc.items[i].k !== 'queue') { R.drawFloorItem(sc.items[i]); } }
+      for (i = 0; i < sc.items.length; i++) { var fk = sc.items[i].k; if (fk !== 'cone' && fk !== 'queue' && !(use3d && fk === 'feet')) { R.drawFloorItem(sc.items[i]); } }
       if (sc.qz) { R.drawQZ(sc.qz, t); }
       for (i = 0; i < sc.overlays.length; i++) { var ov = sc.overlays[i]; if (ov.type !== 'text') { R.drawOverlay(ov, t); } }
       /* balones y quién los sostiene */
@@ -1265,7 +1354,6 @@
       /* manos sobre el balón que vuela recién soltado se resuelven en gestureAt */
       var ctx = { holds: holds }, items = [], P;
       /* capa 3D real (voleii-action-3d.js): cuerpos, balón y malla en WebGL; aquí solo se dibuja lo del piso y las etiquetas */
-      var GL = A.GL, use3d = !!(GL && GL.ready && this.view >= 0.5 && this.gl3d !== false);
       var frame = use3d ? { actors: [], queue: [], balls: balls, t: t } : null;
       for (i = 0; i < ids.length; i++) {
         var a = sc.actors[ids[i]];
@@ -1370,7 +1458,7 @@
     bSp.addEventListener('click', function () { self.speed = self.speed === 1 ? 0.5 : 1; bSp.textContent = self.speed === 1 ? '1x' : '0.5x'; });
     bV.addEventListener('click', function () {
       self.viewGoal = self.viewGoal > 0.5 ? 0 : 1; syncView();
-      try { if (self.cv && self.sc) { self.cv.style.aspectRatio = aspectFor(self.sc, self.viewGoal).toFixed(3); } } catch (err) { if (window.console) { console.error('vista', err); } }
+      try { if (self.cv && self.sc) { self.cv.style.aspectRatio = self.aspectGoal().toFixed(3); } } catch (err) { if (window.console) { console.error('vista', err); } }
       self.render(self.t);
     });
     rg.addEventListener('input', function () { self.dragging = true; self.t = parseInt(rg.value, 10) / 1000 * self.sc.dur; self.render(self.t); });
@@ -1401,7 +1489,7 @@
   DP.snapshot = function (t, view, dpr, fit) {
     this.playing = false; this.view = view; this.viewGoal = view; this.t = t;
     var keep = this.cv.style.aspectRatio;
-    if (fit) { this.cv.style.aspectRatio = aspectFor(this.sc, view).toFixed(3); }
+    if (fit) { this.cv.style.aspectRatio = (view >= 0.5 && this.can3d() ? aspectFor(this.sc, 1, this.frame3d()) : aspectFor(this.sc, view)).toFixed(3); }
     this.R.forceDpr = dpr || 2.5;
     this.render(t);
     var url = this.cv.toDataURL('image/png');

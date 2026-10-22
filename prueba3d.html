@@ -319,6 +319,7 @@ body[data-ses="2"] .s1-only{display:none !important}
 .p3-btn[aria-pressed="true"]{background:var(--gold);color:var(--navy);border-color:var(--gold)}
 .p3-state{font-size:15px;color:var(--muted);margin:2px 0 10px}
 .dia .legend{display:none}
+@media (max-width:600px){.dia{margin:0 -16px;border-radius:0;border-left:0;border-right:0}.dia .stage{padding:6px 0}.dia canvas.action{border-radius:0}}
 </style>
 </head>
 <body class="coach">
@@ -326,7 +327,7 @@ body[data-ses="2"] .s1-only{display:none !important}
   <div class="p3-top">
     <div class="p3-kick">Prueba · voleiiaction 3D</div>
     <h1>Cuerpos <span class="g">reales</span></h1>
-    <div class="p3-sub">SR1 Saque y recibo con jugadores en 3D. La vista desde arriba (botón Arriba) sigue con las marcas, igual que el PDF.</div>
+    <div class="p3-sub">SR1 Saque y recibo con jugadores en 3D, cámara baja y cerca. La vista desde arriba (botón Arriba) sigue con las marcas, igual que el PDF. En el celular, de lado se ven más grandes.</div>
     <div class="p3-bar">
       <div class="p3-grp" role="group" aria-label="Categoría"><span>Categoría</span>
         <button type="button" class="p3-btn" data-age="7-8" aria-pressed="false">7–8U</button>
@@ -336,6 +337,10 @@ body[data-ses="2"] .s1-only{display:none !important}
       <div class="p3-grp" role="group" aria-label="Uniforme"><span>Uniforme</span>
         <button type="button" class="p3-btn" data-team="vaqueros" aria-pressed="true">Vaqueros</button>
         <button type="button" class="p3-btn" data-team="plataneros" aria-pressed="false">Plataneros</button>
+      </div>
+      <div class="p3-grp" role="group" aria-label="Cámara"><span>Cámara</span>
+        <button type="button" class="p3-btn" data-follow="0" aria-pressed="true">Fija</button>
+        <button type="button" class="p3-btn" data-follow="1" aria-pressed="false">Sigue la jugada</button>
       </div>
     </div>
     <div class="p3-state" id="p3-state">Cargando los cuerpos 3D…</div>
@@ -394,6 +399,12 @@ body[data-ses="2"] .s1-only{display:none !important}
     for (i = 0; i < ages.length; i++) {
       ages[i].addEventListener('click', function () {
         try { press('.p3-btn[data-age]', this); AC.setAge(this.getAttribute('data-age')); document.body.setAttribute('data-age', this.getAttribute('data-age')); } catch (err) { console.error(err); }
+      });
+    }
+    var cams = document.querySelectorAll('.p3-btn[data-follow]');
+    for (i = 0; i < cams.length; i++) {
+      cams[i].addEventListener('click', function () {
+        try { press('.p3-btn[data-follow]', this); if (AC.GL && AC.GL.setFollow) { AC.GL.setFollow(this.getAttribute('data-follow') === '1'); } } catch (err) { console.error(err); }
       });
     }
     for (i = 0; i < teams.length; i++) {
