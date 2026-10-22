@@ -381,7 +381,7 @@ body[data-ses="2"] .s1-only{display:none !important}
   try {
     var AC = window.VOLEII && window.VOLEII.Action;
     if (!AC) { return; }
-    AC.mount({ age: '9-10', view: 1 });
+    AC.mount({ age: '9-10', view: 1, figScale: 1.15 });   /* jugadores 15 % más grandes que el tamaño real, para que se vean mejor */
     var st = document.getElementById('p3-state');
     var tries = 0, iv = setInterval(function () {
       tries++;

@@ -654,7 +654,33 @@
     sc.items = [];
     var F = floorRecorder(sc.items);
     if (sc.bg) { sc.bg(F); }
+    scaleFigures(sc, A.state.figScale || 1);
     return sc;
+  }
+  /* figuras más grandes que el tamaño real (por ejemplo 1,15 = 15 % más): crece el cuerpo y, con él,
+     las alturas donde el balón toca las manos y los saltos, para que el balón siga llegando a las manos */
+  function scaleFigures(sc, f) {
+    if (f === 1 || sc.figScaled) { return; }
+    sc.figScaled = f;
+    sc.kid = sc.kid * f;
+    var ids = Object.keys(sc.actors || {}), i, j, L;
+    for (i = 0; i < ids.length; i++) {
+      var a = sc.actors[ids[i]];
+      if (a.role === 'coach') { continue; }          /* el coach es adulto: se queda de su tamaño */
+      if (a.kid) { a.kid *= f; }
+      if (a.jump) { for (j = 0; j < a.jump.length; j++) { if (a.jump[j][2] != null) { a.jump[j][2] *= f; } } }
+    }
+    var lists = sc.balls || (sc.ball ? [sc.ball] : []);
+    for (L = 0; L < lists.length; L++) {
+      for (j = 0; j < lists[L].length; j++) {
+        var g = lists[L][j];
+        if (g.type === 'fly') {
+          var mid = (g.ah + g.bh) / 2;
+          g.ah *= f; g.bh *= f;
+          g.peak += (g.ah + g.bh) / 2 - mid;
+        } else if (g.type === 'hold' && g.h != null) { g.h *= f; }
+      }
+    }
   }
   function floorRecorder(items) {
     return {
@@ -1470,6 +1496,7 @@
       var o = opts || {};
       if (o.age) { A.state.age = o.age; }
       if (o.view !== undefined) { A.state.view = o.view; }
+      if (o.figScale) { A.state.figScale = o.figScale; }
       var scope = o.root || document;
       var roots = scope.querySelectorAll(o.selector || '.dia[data-engine="action"]');
       for (var i = 0; i < roots.length; i++) { var d = new Diagram(roots[i]); diagrams.push(d); made.push(d); }
